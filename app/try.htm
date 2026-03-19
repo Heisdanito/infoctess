@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <style>
+    .spinner{
+      width: 30px;
+      height: 30px;
+      border: 5px solid black;
+      border-radius: 50%;
+      border-left: 5px solid transparent !important;
+      animation: spin 0.3s infinite;
+      transition: all ease;
+      border-right: 5px solid transparent !important;
+    
+    }
+
+    
+
+    @keyframes spin {
+      0%{
+        transform: rotate(0deg);
+        border-color: rgb(199, 199, 199);
+      }
+      100%{
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+<body>
+  <div>
+    <div class="spinner" id="spinner"></div>
+    <h1>loading</h1>
+  </div>
+
+  </body>
+<script src="../backend/attendance/attendeance-tb.js">
+
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- index.html -->
+<!-- <html>
+  <body>
+  <script src="../backend/code/qrCode.js"></script> -->
+
+<!-- <div id="verifySpot"></div>
+<script>
+  const Verifyattendace = new QRCode(
+    document.getElementById('verifySpot'),{
+        text: `heisdanito`,
+        height: 128,
+        width:  128,
+        correctLevel:QRCode.CorrectLevel.H
+    }
+)
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> -->
+
+<!-- <script>
+  if ("geolocation" in navigator) {
+    /* geolocation is available */
+} else {
+    /* geolocation IS NOT available */
+}
+
+  // Example: Getting current position
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    console.log(`Lat: ${position.coords.latitude}, Long: ${position.coords.longitude}`);
+  },
+  (error) => {
+    console.error(`Err
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    r: ${error.message}`);
+  }
+);
+<script src="
+https://cdn.jsdelivr.net/npm/qrcode@1.5.4/lib/browser.min.js
+"></script>
+
+</script> -->
+
+<!-- Modal structure -->
+<!-- <div id="responseModal" class="modal">
+  <div class="modal-content">
+    <div id="icon" class="icon"></div>
+    <h3 id="modalMessage"></h3>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<style>
+/* Modal styling */
+.modal {
+  display: none; /* hidden by default */
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center; align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 300px;
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Success icon */
+.icon.success {
+  width: 60px; height: 60px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 4px solid #4CAF50;
+  position: relative;
+}
+.icon.success::after {
+  content: "";
+  position: absolute;
+  left: 16px; top: 24px;
+  width: 12px; height: 24px;
+  border-right: 4px solid #4CAF50;
+  border-bottom: 4px solid #4CAF50;
+  transform: rotate(45deg);
+  animation: drawCheck 0.5s ease forwards;
+}
+@keyframes drawCheck {
+  from { width: 0; height: 0; }
+  to { width: 12px; height: 24px; }
+}
+
+/* Error icon */
+.icon.error {
+  width: 60px; height: 60px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 4px solid #F44336;
+  position: relative;
+}
+.icon.error::before,
+.icon.error::after {
+  content: "";
+  position: absolute;
+  left: 18px; top: 18px;
+  width: 24px; height: 4px;
+  background: #F44336;
+}
+.icon.error::before { transform: rotate(45deg); }
+.icon.error::after { transform: rotate(-45deg); }
+</style>
+
+<script>
+function showModal(status, message) {
+  const modal = document.getElementById("responseModal");
+  const icon = document.getElementById("icon");
+  const msg = document.getElementById("modalMessage");
+
+  // Reset classes
+  icon.className = "icon";
+  if (status === "success") {
+    icon.classList.add("success");
+  } else {
+    icon.classList.add("error");
+  }
+
+  msg.textContent = message;
+  modal.style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("responseModal").style.display = "none";
+}
+
+// Example usage after fetch:
+fetch('../backend/attendance/save-att.php', { /* ... */ })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      showModal("success", "Attendance recorded successfully!");
+    } else {
+      showModal("error", "Attendance failed: " + data.message);
+    }
+  });
+</script> -->

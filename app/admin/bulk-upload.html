@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Infoctess UEW - Upload Students</title>
+    <!-- base:css -->
+    <link rel="stylesheet" href="../../vendors/typicons.font/font/typicons.css">
+    <link rel="stylesheet" href="../../vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../../vendors/css/vendor.bundle.base.css">
+    <!-- endinject -->
+    <!-- plugin css for this page -->
+    <link rel="stylesheet" href="../../vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <link rel="stylesheet" href="../../css/vertical-layout-light/style.css">
+    <!-- endinject -->
+    <link rel="shortcut icon" href="../../images/favicon.png" />
+    <style>
+        .upload-area {
+            border: 2px dashed #4f6ef7;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            background: #e8ecff;
+            border-color: #3a5bd9;
+        }
+        .upload-area.dragover {
+            background: #d8e0ff;
+            border-color: #2a4ac9;
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: #4f6ef7;
+            margin-bottom: 15px;
+        }
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            display: none;
+        }
+        .preview-table {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .preview-table table {
+            font-size: 14px;
+        }
+        .progress {
+            height: 30px;
+            margin-top: 20px;
+            display: none;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .sample-download {
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .validation-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .success-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .error-badge {
+            background: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-scroller">
+        <!-- Navbar -->
+        <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+            <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                <a class="navbar-brand brand-logo" href="../index.html"><img src="../../images/logo.png" alt="logo"/></a>
+                <a class="navbar-brand brand-logo-mini" href="../index.html"><img src="../../images/logo.png" alt="logo"/></a>
+                <button class="navbar-toggler navbar-toggler align-self-center d-none d-lg-flex" type="button" data-toggle="minimize">
+                    <span class="typcn typcn-th-menu"></span>
+                </button>
+            </div>
+            <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+                <ul class="navbar-nav navbar-nav-right">
+                    <li class="nav-item nav-profile dropdown">
+                        <a class="nav-link dropdown-toggle pl-0 pr-0" href="#" data-toggle="dropdown" id="profileDropdown">
+                            <i class="typcn typcn-user-outline mr-0"></i>
+                            <span class="nav-profile-name" id="adminNameDisplay">Admin</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown">
+                            <a class="dropdown-item" href="../auth/logout.php">
+                                <i class="typcn typcn-power text-primary"></i> Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid page-body-wrapper">
+            <!-- Sidebar -->
+            <nav class="sidebar sidebar-offcanvas" id="sidebar">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <div class="d-flex sidebar-profile">
+                            <div class="sidebar-profile-image">
+                                <img src="../../images/faces/image01.jpg" alt="image">
+                            </div>
+                            <div class="sidebar-profile-name">
+                                <p class="sidebar-name">Admin User</p>
+                                <p class="sidebar-designation">Administrator</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../admin/index.html">
+                            <i class="typcn typcn-device-desktop menu-icon"></i>
+                            <span class="menu-title">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="upload-students.html">
+                            <i class="typcn typcn-upload menu-icon"></i>
+                            <span class="menu-title">Upload Students</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Panel -->
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <!-- Page Header -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h3 class="mb-0 font-weight-bold">Upload Students from Excel</h3>
+                            <p class="text-muted">Upload multiple students at once using Excel file format</p>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <a href="../../backend/samples/sample-students.xlsx" class="btn btn-outline-primary">
+                                <i class="typcn typcn-download"></i> Download Sample
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Selection Cards -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Step 1: Select Assignment Details</h4>
+                                    <p class="card-description">Choose where to assign the uploaded students</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Programme <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="programmeSelect" required>
+                                                    <option value="">Select Programme</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Course</label>
+                                                <select class="form-control" id="courseSelect">
+                                                    <option value="">Select Course (Optional)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Group</label>
+                                                <select class="form-control" id="groupSelect">
+                                                    <option value="">Select Group (Optional)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Default Role</label>
+                                                <select class="form-control" id="defaultRole">
+                                                    <option value="user">User</option>
+                                                    <option value="rep">Rep</option>
+                                                    <option value="ta">TA</option>
+                                                    <option value="lec">Lecturer</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Default Status</label>
+                                                <select class="form-control" id="defaultStatus">
+                                                    <option value="1">Active</option>
+                                                    <option value="0">Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Area -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Step 2: Upload Excel File</h4>
+                                    <p class="card-description">File should contain columns: <strong>ID</strong> (index number) and <strong>NAME</strong> (student name)</p>
+                                    
+                                    <!-- Upload Area -->
+                                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                                        <div class="upload-icon">
+                                            <i class="typcn typcn-cloud-storage"></i>
+                                        </div>
+                                        <h5>Drag & Drop Excel File Here</h5>
+                                        <p class="text-muted">or click to browse</p>
+                                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                                    </div>
+
+                                    <!-- File Info -->
+                                    <div class="file-info" id="fileInfo">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <strong>File:</strong> <span id="fileName"></span><br>
+                                                <strong>Size:</strong> <span id="fileSize"></span><br>
+                                                <strong>Rows detected:</strong> <span id="rowCount">0</span>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <button class="btn btn-danger btn-sm" onclick="clearFile()">
+                                                    <i class="typcn typcn-delete"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress Bar -->
+                                    <div class="progress" id="uploadProgress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                             style="width: 0%" id="progressBar">0%</div>
+                                    </div>
+
+                                    <!-- Preview Table -->
+                                    <div class="preview-table" id="previewTable" style="display: none;">
+                                        <h5>Preview Data</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover" id="dataPreview">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Student ID</th>
+                                                        <th>Student Name</th>
+                                                        <th>Email</th>
+                                                        <th>Programme</th>
+                                                        <th>Group</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="previewBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Upload Button -->
+                                    <div class="text-center mt-4" id="uploadButtonContainer" style="display: none;">
+                                        <button class="btn btn-primary btn-lg" onclick="uploadStudents()" id="uploadBtn">
+                                            <i class="typcn typcn-upload"></i> Upload Students
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div class="row mt-4" id="resultsContainer" style="display: none;">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Upload Results</h4>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="stats-card">
+                                                <h3 id="successCount">0</h3>
+                                                <p>Successfully Uploaded</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="stats-card" style="background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);">
+                                                <h3 id="failedCount">0</h3>
+                                                <p>Failed</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="stats-card" style="background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);">
+                                                <h3 id="duplicateCount">0</h3>
+                                                <p>Duplicates Skipped</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="stats-card" style="background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);">
+                                                <h3 id="totalProcessed">0</h3>
+                                                <p>Total Processed</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Error Details -->
+                                    <div class="mt-4" id="errorDetails" style="display: none;">
+                                        <h5>Error Details</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Row</th>
+                                                        <th>Student ID</th>
+                                                        <th>Name</th>
+                                                        <th>Error</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="errorBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                        <span>Copyright © <a href="https://Infoctess.ct.ws/" target="_blank">Infoctess</a> 2026</span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../vendors/js/vendor.bundle.base.js"></script>
+    <script src="../../vendors/datatables.net/jquery.dataTables.js"></script>
+    <script src="../../vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+    <script src="../../js/off-canvas.js"></script>
+    <script src="../../js/hoverable-collapse.js"></script>
+    <script src="../../js/template.js"></script>
+    <script src="../../js/settings.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        let excelData = null;
+        let headers = [];
+        let rows = [];
+        let validationErrors = [];
+
+        // Load dropdown options
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgrammes();
+            loadCourses();
+            loadGroups();
+        });
+
+        // Load programmes
+        function loadProgrammes() {
+            fetch('../../backend/programmes/get-programmes.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Programme</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(prog => {
+                            options += `<option value="${prog.programme_code}">${prog.programme_name}</option>`;
+                        });
+                    }
+                    document.getElementById('programmeSelect').innerHTML = options;
+                });
+        }
+
+        // Load courses
+        function loadCourses() {
+            fetch('../../backend/courses/get-courses.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Course (Optional)</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(course => {
+                            options += `<option value="${course.course_id}">${course.course_name}</option>`;
+                        });
+                    }
+                    document.getElementById('courseSelect').innerHTML = options;
+                });
+        }
+
+        // Load groups
+        function loadGroups() {
+            fetch('../../backend/groups/get-groups-dropdown.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Group (Optional)</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(group => {
+                            options += `<option value="${group.group_id}">${group.group_name}</option>`;
+                        });
+                    }
+                    document.getElementById('groupSelect').innerHTML = options;
+                });
+        }
+
+        // Drag and drop handlers
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                handleFile(this.files[0]);
+            }
+        });
+
+        // Handle file upload
+        function handleFile(file) {
+            const validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                               'application/vnd.ms-excel', 
+                               'text/csv'];
+            
+            if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.xls') && !file.name.endsWith('.csv')) {
+                alert('Please upload a valid Excel file (.xlsx, .xls, or .csv)');
+                return;
+            }
+
+            // Display file info
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(2) + ' KB';
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('uploadButtonContainer').style.display = 'none';
+            document.getElementById('previewTable').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+
+            // Read file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheet];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Process headers
+                headers = jsonData[0] || [];
+                rows = jsonData.slice(1).filter(row => row.length > 0 && row[0] && row[1]);
+
+                // Validate columns
+                validateColumns();
+                
+                // Show preview
+                showPreview();
+                
+                document.getElementById('rowCount').textContent = rows.length;
+                document.getElementById('uploadButtonContainer').style.display = 'block';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Validate columns
+        function validateColumns() {
+            validationErrors = [];
+            const idCol = headers.findIndex(h => h && h.toString().toLowerCase().includes('id'));
+            const nameCol = headers.findIndex(h => h && h.toString().toLowerCase().includes('name'));
+
+            if (idCol === -1) {
+                alert('Could not find ID column. Please ensure your file has a column containing "ID"');
+            }
+            if (nameCol === -1) {
+                alert('Could not find Name column. Please ensure your file has a column containing "Name"');
+            }
+        }
+
+        // Show preview
+        function showPreview() {
+            const tbody = document.getElementById('previewBody');
+            const idCol = headers.findIndex(h => h && h.toString().toLowerCase().includes('id'));
+            const nameCol = headers.findIndex(h => h && h.toString().toLowerCase().includes('name'));
+            
+            let previewHtml = '';
+            const previewRows = rows.slice(0, 10); // Show first 10 rows
+            
+            previewRows.forEach((row, index) => {
+                const studentId = row[idCol]?.toString().trim() || '';
+                const studentName = row[nameCol]?.toString().trim() || '';
+                const programme = document.getElementById('programmeSelect').selectedOptions[0]?.text || 'Not selected';
+                const group = document.getElementById('groupSelect').selectedOptions[0]?.text || 'Not selected';
+                
+                previewHtml += `<tr>
+                    <td>${index + 1}</td>
+                    <td>${studentId}</td>
+                    <td>${studentName}</td>
+                    <td>${studentId}@stu.uew.edu.gh</td>
+                    <td>${programme}</td>
+                    <td>${group}</td>
+                    <td><span class="success-badge">Pending</span></td>
+                </tr>`;
+            });
+
+            if (rows.length > 10) {
+                previewHtml += `<tr><td colspan="7" class="text-center">... and ${rows.length - 10} more rows</td></tr>`;
+            }
+
+            tbody.innerHTML = previewHtml;
+            document.getElementById('previewTable').style.display = 'block';
+        }
+
+        // Clear file
+        function clearFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('uploadButtonContainer').style.display = 'none';
+            document.getElementById('previewTable').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            excelData = null;
+            rows = [];
+        }
+
+        // Upload students
+        function uploadStudents() {
+            const programme = document.getElementById('programmeSelect').value;
+            if (!programme) {
+                alert('Please select a programme');
+                return;
+            }
+
+            const course = document.getElementById('courseSelect').value;
+            const group = document.getElementById('groupSelect').value;
+            const defaultRole = document.getElementById('defaultRole').value;
+            const defaultStatus = document.getElementById('defaultStatus').value;
+
+            const idCol = headers.findIndex(h => h && h.toString().toLowerCase().includes('id'));
+            const nameCol = headers.findIndex(h => h && h.toString().toLowerCase().includes('name'));
+
+            // Prepare data for upload
+            const students = rows.map(row => ({
+                student_id: row[idCol]?.toString().trim(),
+                student_name: row[nameCol]?.toString().trim(),
+                programme: programme,
+                course_id: course || null,
+                group_id: group || null,
+                roles: defaultRole,
+                active: defaultStatus,
+                student_mail: row[idCol]?.toString().trim() + '@stu.uew.edu.gh'
+            })).filter(s => s.student_id && s.student_name);
+
+            // Show progress
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('uploadBtn').innerHTML = '<i class="typcn typcn-cloud-storage"></i> Uploading...';
+
+            // Send to server
+            fetch('../../backend/students/bulk-upload.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    students: students,
+                    programme: programme,
+                    course: course,
+                    group: group
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                document.getElementById('uploadProgress').style.display = 'none';
+                document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('uploadBtn').innerHTML = '<i class="typcn typcn-upload"></i> Upload Students';
+                
+                if (response.status === 'success') {
+                    showResults(response.data);
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById('uploadProgress').style.display = 'none';
+                document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('uploadBtn').innerHTML = '<i class="typcn typcn-upload"></i> Upload Students';
+                alert('Upload failed: ' + error.message);
+            });
+
+            // Simulate progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressBar').textContent = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 200);
+        }
+
+        // Show results
+        function showResults(data) {
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('successCount').textContent = data.success || 0;
+            document.getElementById('failedCount').textContent = data.failed || 0;
+            document.getElementById('duplicateCount').textContent = data.duplicates || 0;
+            document.getElementById('totalProcessed').textContent = data.total || 0;
+
+            if (data.errors && data.errors.length > 0) {
+                let errorHtml = '';
+                data.errors.forEach(err => {
+                    errorHtml += `<tr>
+                        <td>${err.row || 'N/A'}</td>
+                        <td>${err.student_id || ''}</td>
+                        <td>${err.name || ''}</td>
+                        <td>${err.message || ''}</td>
+                    </tr>`;
+                });
+                document.getElementById('errorBody').innerHTML = errorHtml;
+                document.getElementById('errorDetails').style.display = 'block';
+            } else {
+                document.getElementById('errorDetails').style.display = 'none';
+            }
+
+            // Scroll to results
+            document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

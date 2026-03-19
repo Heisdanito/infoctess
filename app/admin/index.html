@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Infoctess UEW - Admin Panel</title>
+    <!-- base:css -->
+    <link rel="stylesheet" href="../../vendors/typicons.font/font/typicons.css">
+    <link rel="stylesheet" href="../../vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../../vendors/css/vendor.bundle.base.css">
+    <!-- endinject -->
+    <!-- plugin css for this page -->
+    <link rel="stylesheet" href="../../vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <link rel="stylesheet" href="../../css/vertical-layout-light/style.css">
+    <!-- endinject -->
+    <link rel="shortcut icon" href="../../images/favicon.png" />
+    <style>
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #4f6ef7;
+            animation: spin 0.8s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-direction: column;
+            padding: 40px;
+        }
+        .badge-active {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .badge-inactive {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            cursor: pointer;
+        }
+        .card-bg {
+            background: rgb(15, 2, 132);
+        }
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 600;
+        }
+        .nav-tabs .nav-link.active {
+            color: #4f6ef7;
+            border-bottom: 3px solid #4f6ef7;
+        }
+        .stat-card {
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .qr-code-small {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+        }
+        .qr-modal-img {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .session-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        .session-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .session-card.active {
+            border-left: 4px solid #28a745;
+        }
+        .session-card.inactive {
+            border-left: 4px solid #dc3545;
+        }
+        .session-card.expired {
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Login Section -->
+    <div id="loginSection" class="login-container">
+        <div class="login-card bg-white">
+            <div class="text-center mb-4">
+                <img src="../../images/logo.png" alt="logo" style="height: 60px;">
+                <h3 class="mt-3 font-weight-bold">Admin Access</h3>
+                <p class="text-muted">Enter your credentials to continue</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label>Username / Student ID</label>
+                    <input type="text" class="form-control" id="adminUsername" placeholder="Enter admin username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" id="adminPassword" placeholder="Enter password" required>
+                </div>
+                <div id="loginError" class="alert alert-danger hidden"></div>
+                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                    <span class="spinner-border spinner-border-sm hidden" id="loginSpinner"></span>
+                    Login to Admin Panel
+                </button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="index.html" class="text-muted">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Main Content (Hidden by default) -->
+    <div id="adminContent" class="hidden">
+        <div class="container-scroller">
+            <!-- Navbar -->
+            <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                    <a class="navbar-brand brand-logo" href="index.html"><img src="../../images/logo.png" alt="logo"/></a>
+                    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="../../images/logo.png" alt="logo"/></a>
+                    <button class="navbar-toggler navbar-toggler align-self-center d-none d-lg-flex" type="button" data-toggle="minimize">
+                        <span class="typcn typcn-th-menu"></span>
+                    </button>
+                </div>
+                <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+                    <ul class="navbar-nav mr-lg-2">
+                        <li class="nav-item d-none d-lg-flex">
+                            <a class="nav-link" href="#">Calendar</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav navbar-nav-right">
+                        <li class="nav-item dropdown d-flex">
+                            <a class="nav-link count-indicator dropdown-toggle" id="messageDropdown" href="#" data-toggle="dropdown">
+                                <i class="typcn typcn-message-typing"></i>
+                                <span class="count bg-success">2</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list">
+                                <p class="mb-0 font-weight-normal float-left dropdown-header">Messages</p>
+                                <a class="dropdown-item preview-item">
+                                    <div class="preview-thumbnail">
+                                        <img src="../../images/faces/face4.jpg" alt="image" class="profile-pic">
+                                    </div>
+                                    <div class="preview-item-content flex-grow">
+                                        <h6 class="preview-subject ellipsis font-weight-normal">David Grey</h6>
+                                        <p class="font-weight-light small-text mb-0">System alert: New admin login</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </li>
+                        <li class="nav-item nav-profile dropdown">
+                            <a class="nav-link dropdown-toggle pl-0 pr-0" href="#" data-toggle="dropdown" id="profileDropdown">
+                                <i class="typcn typcn-user-outline mr-0"></i>
+                                <span class="nav-profile-name" id="adminNameDisplay">Admin</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown">
+                                <a class="dropdown-item" href="#" onclick="logoutAdmin()">
+                                    <i class="typcn typcn-power text-primary"></i> Logout
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid page-body-wrapper">
+                <!-- Sidebar -->
+                <nav class="sidebar sidebar-offcanvas" id="sidebar">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <div class="d-flex sidebar-profile">
+                                <div class="sidebar-profile-image">
+                                    <img src="../../images/faces/image01.jpg" alt="image">
+                                </div>
+                                <div class="sidebar-profile-name">
+                                    <p class="sidebar-name" id="sidebarAdminName">Admin User</p>
+                                    <p class="sidebar-designation">Administrator</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('dashboard')">
+                                <i class="typcn typcn-device-desktop menu-icon"></i>
+                                <span class="menu-title">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#users-menu" aria-expanded="false">
+                                <i class="typcn typcn-group menu-icon"></i>
+                                <span class="menu-title">User Management</span>
+                                <i class="typcn typcn-chevron-right menu-arrow"></i>
+                            </a>
+                            <div class="collapse" id="users-menu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('students')">Students</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('admins')">Admins & Staff</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('roles')">Role Management</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#academic-menu" aria-expanded="false">
+                                <i class="typcn typcn-book menu-icon"></i>
+                                <span class="menu-title">Academic</span>
+                                <i class="typcn typcn-chevron-right menu-arrow"></i>
+                            </a>
+                            <div class="collapse" id="academic-menu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('courses')">Courses</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('programmes')">Programmes</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('groups')">Groups</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#sessions-menu" aria-expanded="false">
+                                <i class="typcn typcn-calendar menu-icon"></i>
+                                <span class="menu-title">Sessions</span>
+                                <i class="typcn typcn-chevron-right menu-arrow"></i>
+                            </a>
+                            <div class="collapse" id="sessions-menu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('active-sessions')">Active Sessions</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('all-sessions')">All Sessions</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('create-session')">Create Session</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#attendance-menu" aria-expanded="false">
+                                <i class="typcn typcn-document-text menu-icon"></i>
+                                <span class="menu-title">Attendance</span>
+                                <i class="typcn typcn-chevron-right menu-arrow"></i>
+                            </a>
+                            <div class="collapse" id="attendance-menu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('attendance-records')">All Records</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('attendance-summary')">Summary</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('reports')">Reports</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#system-menu" aria-expanded="false">
+                                <i class="typcn typcn-cog menu-icon"></i>
+                                <span class="menu-title">System</span>
+                                <i class="typcn typcn-chevron-right menu-arrow"></i>
+                            </a>
+                            <div class="collapse" id="system-menu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('settings')">Settings</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('logs')">Activity Logs</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="./bulk-upload.html" >Upload Data</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('backup')">Backup</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Main Panel -->
+                <div class="main-panel">
+                    <div class="content-wrapper">
+                        <!-- Dynamic Content Sections -->
+                        <div id="dashboard-section" class="content-section">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Admin Dashboard</h3>
+                                    <p class="lastLog">Welcome back, <span id="welcomeAdminName">Admin</span>!</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="refreshAllData()">
+                                        <i class="typcn typcn-refresh"></i> Refresh Data
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Stats Cards -->
+                            <div class="row mt-3">
+                                <div class="col-md-3 grid-margin stretch-card">
+                                    <div class="card card-bg stat-card">
+                                        <div class="card-body text-white">
+                                            <h5>Total Students</h5>
+                                            <h2 class="mb-0" id="totalStudents">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 grid-margin stretch-card">
+                                    <div class="card stat-card card-bg">
+                                        <div class="card-body text-white">
+                                            <h5>Total Courses</h5>
+                                            <h2 class="mb-0" id="totalCourses">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 grid-margin stretch-card">
+                                    <div class="card stat-card card-bg">
+                                        <div class="card-body text-white">
+                                            <h5>Active Sessions</h5>
+                                            <h2 class="mb-0" id="totalActiveSessions">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 grid-margin stretch-card">
+                                    <div class="card stat-card card-bg">
+                                        <div class="card-body text-white">
+                                            <h5>Today's Attendance</h5>
+                                            <h2 class="mb-0" id="todayAttendance">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="row">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title">Quick Actions</h4>
+                                            <button class="btn btn-primary mr-2" onclick="showSection('create-session')">
+                                                <i class="typcn typcn-plus"></i> New Session
+                                            </button>
+                                            <button class="btn btn-primary mr-2" onclick="showSection('students')">
+                                                <i class="typcn typcn-group"></i> Manage Students
+                                            </button>
+                                            <button class="btn btn-primary mr-2" onclick="showSection('courses')">
+                                                <i class="typcn typcn-book"></i> Manage Courses
+                                            </button>
+                                            <button class="btn btn-primary" onclick="showSection('reports')">
+                                                <i class="typcn typcn-chart-bar"></i> View Reports
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="row">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title">Recent Activity</h4>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Time</th>
+                                                            <th>User</th>
+                                                            <th>Action</th>
+                                                            <th>Details</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="recentActivityBody">
+                                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Students Management Section -->
+                        <div id="students-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Student Management</h3>
+                                    <p class="lastLog">Add, edit, or remove students</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showAddStudentModal()">
+                                        <i class="typcn typcn-plus"></i> Add Student
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" id="studentSearchInput" placeholder="Search students...">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select class="form-control" id="studentProgrammeFilter">
+                                                        <option value="">All Programmes</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select class="form-control" id="studentGroupFilter">
+                                                        <option value="">All Groups</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <select class="form-control" id="studentRoleFilter">
+                                                        <option value="">All Roles</option>
+                                                        <option value="user">User</option>
+                                                        <option value="rep">Rep</option>
+                                                        <option value="ta">TA</option>
+                                                        <option value="lec">Lecturer</option>
+                                                        <option value="admin">Admin</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Student ID</th>
+                                                            <th>Name</th>
+                                                            <th>Email</th>
+                                                            <th>Programme</th>
+                                                            <th>Group</th>
+                                                            <th>Role</th>
+                                                            <th>Status</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="studentsManagementBody">
+                                                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Programmes Management Section -->
+                        <div id="programmes-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Programme Management</h3>
+                                    <p class="lastLog">Manage academic programmes</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showAddProgrammeModal()">
+                                        <i class="typcn typcn-plus"></i> Add Programme
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Programme Code</th>
+                                                            <th>Programme Name</th>
+                                                            <th>Students</th>
+                                                            <th>Courses</th>
+                                                            <th>Groups</th>
+                                                            <th>Year</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="programmesManagementBody">
+                                                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Courses Management Section -->
+                        <div id="courses-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Course Management</h3>
+                                    <p class="lastLog">Manage courses and assignments</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showAddCourseModal()">
+                                        <i class="typcn typcn-plus"></i> Add Course
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Course ID</th>
+                                                            <th>Course Name</th>
+                                                            <th>Programme</th>
+                                                            <th>Group</th>
+                                                            <th>Created</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="coursesManagementBody">
+                                                        <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Groups Management Section -->
+                        <div id="groups-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Group Management</h3>
+                                    <p class="lastLog">Manage student groups</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showAddGroupModal()">
+                                        <i class="typcn typcn-plus"></i> Add Group
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group ID</th>
+                                                            <th>Group Name</th>
+                                                            <th>Programme</th>
+                                                            <th>Students</th>
+                                                            <th>Sessions</th>
+                                                            <th>Status</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="groupsManagementBody">
+                                                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sessions Management Section with Grid View -->
+                        <div id="sessions-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Session Management</h3>
+                                    <p class="lastLog">Manage all QR sessions</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showCreateSessionModal()">
+                                        <i class="typcn typcn-plus"></i> New Session
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <ul class="nav nav-tabs mb-3" id="sessionTabs">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href="#" onclick="loadSessionsGrid('active')">Active Sessions</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#" onclick="loadSessionsGrid('inactive')">Inactive Sessions</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#" onclick="loadSessionsGrid('all')">All Sessions</a>
+                                                </li>
+                                            </ul>
+                                            
+                                            <!-- Grid View of Sessions -->
+                                            <div id="sessionsGridContainer" class="section-grid">
+                                                <!-- Sessions will be loaded here as cards -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- All Sessions Table View (Alternative view) -->
+                        <div id="all-sessions-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">All Sessions</h3>
+                                    <p class="lastLog">Complete list of all QR sessions</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showSection('create-session')">
+                                        <i class="typcn typcn-plus"></i> New Session
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>QR Code</th>
+                                                            <th>Session Code</th>
+                                                            <th>Course</th>
+                                                            <th>Group</th>
+                                                            <th>Created By</th>
+                                                            <th>Created At</th>
+                                                            <th>Expires</th>
+                                                            <th>Status</th>
+                                                            <th>Scans</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="allSessionsManagementBody">
+                                                        <tr><td colspan="10" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Sessions Section -->
+                        <div id="active-sessions-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Active Sessions</h3>
+                                    <p class="lastLog">Currently running QR sessions</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="showSection('create-session')">
+                                        <i class="typcn typcn-plus"></i> New Session
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div id="activeSessionsGrid" class="section-grid">
+                                                <!-- Active sessions will be loaded here as cards -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create Session Section -->
+                        <div id="create-session-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title">Create New QR Session</h4>
+                                            <form id="adminSessionForm">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>Course</label>
+                                                            <select class="form-control" id="adminCourseSelect" required>
+                                                                <option value="">Select Course</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>Group</label>
+                                                            <select class="form-control" id="adminGroupSelect" required>
+                                                                <option value="">Select Group</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label>Duration (minutes)</label>
+                                                            <input type="number" class="form-control" id="adminDuration" value="60" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label>Latitude</label>
+                                                            <input type="text" class="form-control" id="adminLatitude" placeholder="Optional">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label>Longitude</label>
+                                                            <input type="text" class="form-control" id="adminLongitude" placeholder="Optional">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-primary" onclick="adminCreateSession()">
+                                                    <i class="typcn typcn-tick"></i> Create Session
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" onclick="showSection('sessions')">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Records Section -->
+                        <div id="attendance-records-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Attendance Records</h3>
+                                    <p class="lastLog">All attendance records</p>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <button class="btn btn-primary" onclick="exportAttendance()">
+                                        <i class="typcn typcn-download"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Student ID</th>
+                                                            <th>Student Name</th>
+                                                            <th>Session Code</th>
+                                                            <th>Course</th>
+                                                            <th>Group</th>
+                                                            <th>Time</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="attendanceRecordsBody">
+                                                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reports Section -->
+                        <div id="reports-section" class="content-section hidden">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="mb-0 font-weight-bold">Attendance Reports</h3>
+                                    <p class="lastLog">Generate and view reports</p>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5>Attendance by Programme</h5>
+                                            <canvas id="programmeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 grid-margin">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5>Attendance by Group</h5>
+                                            <canvas id="groupChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <footer class="footer">
+                        <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                            <span>Copyright © <a href="https://Infoctess.ct.ws/app/" target="_blank">Infoctess</a> 2026</span>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrCodeModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">QR Code</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCodeDisplay"></div>
+                    <p id="qrSessionCode" class="mt-2"></p>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="downloadQRCode()">
+                        <i class="typcn typcn-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Student</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addStudentForm">
+                        <div class="form-group">
+                            <label>Student ID</label>
+                            <input type="text" class="form-control" id="newStudentId" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" class="form-control" id="newStudentName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" id="newStudentEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Programme</label>
+                            <select class="form-control" id="newStudentProgramme" required>
+                                <option value="">Select Programme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Group</label>
+                            <select class="form-control" id="newStudentGroup">
+                                <option value="">Select Group</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select class="form-control" id="newStudentRole">
+                                <option value="user">User</option>
+                                <option value="rep">Rep</option>
+                                <option value="ta">TA</option>
+                                <option value="lec">Lecturer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addStudent()">Add Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="modal fade" id="editStudentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Student</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editStudentForm">
+                        <input type="hidden" id="editStudentId">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" class="form-control" id="editStudentName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" id="editStudentEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Programme</label>
+                            <select class="form-control" id="editStudentProgramme" required>
+                                <option value="">Select Programme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Group</label>
+                            <select class="form-control" id="editStudentGroup">
+                                <option value="">Select Group</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select class="form-control" id="editStudentRole">
+                                <option value="user">User</option>
+                                <option value="rep">Rep</option>
+                                <option value="ta">TA</option>
+                                <option value="lec">Lecturer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control" id="editStudentStatus">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateStudent()">Update Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Programme Modal -->
+    <div class="modal fade" id="addProgrammeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Programme</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProgrammeForm">
+                        <div class="form-group">
+                            <label>Programme Code</label>
+                            <input type="text" class="form-control" id="newProgrammeCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Programme Name</label>
+                            <input type="text" class="form-control" id="newProgrammeName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Year</label>
+                            <input type="text" class="form-control" id="newProgrammeYear" value="2026" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addProgramme()">Add Programme</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div class="modal fade" id="addCourseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Course</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCourseForm">
+                        <div class="form-group">
+                            <label>Course ID</label>
+                            <input type="text" class="form-control" id="newCourseId" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Course Name</label>
+                            <input type="text" class="form-control" id="newCourseName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Programme</label>
+                            <select class="form-control" id="newCourseProgramme" required>
+                                <option value="">Select Programme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Group</label>
+                            <select class="form-control" id="newCourseGroup">
+                                <option value="">Select Group</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addCourse()">Add Course</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Group Modal -->
+    <div class="modal fade" id="addGroupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Group</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addGroupForm">
+                        <div class="form-group">
+                            <label>Group Name</label>
+                            <input type="text" class="form-control" id="newGroupName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Programme</label>
+                            <select class="form-control" id="newGroupProgramme" required>
+                                <option value="">Select Programme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Course</label>
+                            <select class="form-control" id="newGroupCourse">
+                                <option value="">Select Course</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Academic Year</label>
+                            <input type="text" class="form-control" id="newGroupYear" value="2026" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addGroup()">Add Group</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- scripts -->
+    <script src="../../vendors/js/vendor.bundle.base.js"></script>
+    <script src="../../vendors/datatables.net/jquery.dataTables.js"></script>
+    <script src="../../vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+    <script src="../../vendors/chart.js/Chart.min.js"></script>
+    <script src="../../js/off-canvas.js"></script>
+    <script src="../../js/hoverable-collapse.js"></script>
+    <script src="../../js/template.js"></script>
+    <script src="../../js/settings.js"></script>
+    <script src="../../js/todolist.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+    <script>
+        // Admin authentication state
+        let isAdminAuthenticated = false;
+        let currentAdmin = null;
+        let currentChart = null;
+        let programmeChart = null;
+        let groupChart = null;
+
+        // Check if admin is already logged in (check session)
+        function checkAdminSession() {
+            fetch('../../backend/auth/check-admin-session.php')
+                .then(res => res.json())
+                .then(response => {
+                    if (response.authenticated && response.role === 'admin') {
+                        isAdminAuthenticated = true;
+                        currentAdmin = response.user;
+                        showAdminContent();
+                        loadAllAdminData();
+                    } else {
+                        showLoginForm();
+                    }
+                })
+                .catch(() => {
+                    showLoginForm();
+                });
+        }
+
+        // Show login form, hide admin content
+        function showLoginForm() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('adminContent').classList.add('hidden');
+        }
+
+        // Show admin content, hide login form
+        function showAdminContent() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminContent').classList.remove('hidden');
+            
+            // Update admin name displays
+            if (currentAdmin) {
+                document.getElementById('adminNameDisplay').textContent = currentAdmin.name || 'Admin';
+                document.getElementById('sidebarAdminName').textContent = currentAdmin.name || 'Admin User';
+                document.getElementById('welcomeAdminName').textContent = currentAdmin.name || 'Admin';
+            }
+        }
+
+        // Handle login form submission
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            // Show loading
+            document.getElementById('loginSpinner').classList.remove('hidden');
+            document.getElementById('loginBtn').disabled = true;
+            
+            // Attempt login
+            fetch('../../backend/auth/admin-login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(response => {
+                document.getElementById('loginSpinner').classList.add('hidden');
+                document.getElementById('loginBtn').disabled = false;
+                
+                if (response.status === 'success' && response.role === 'admin') {
+                    isAdminAuthenticated = true;
+                    currentAdmin = response.user;
+                    showAdminContent();
+                    loadAllAdminData();
+                } else {
+                    document.getElementById('loginError').textContent = response.message || 'Invalid credentials';
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loginSpinner').classList.add('hidden');
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loginError').textContent = 'Connection error';
+                document.getElementById('loginError').classList.remove('hidden');
+            });
+        });
+
+        // Logout function
+        function logoutAdmin() {
+            fetch('../../backend/auth/admin-logout.php')
+                .then(() => {
+                    isAdminAuthenticated = false;
+                    currentAdmin = null;
+                    showLoginForm();
+                });
+        }
+
+        // Show different sections
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Show selected section
+            const sectionElement = document.getElementById(section + '-section');
+            if (sectionElement) {
+                sectionElement.classList.remove('hidden');
+            }
+            
+            // Load section data
+            switch(section) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'students':
+                    loadStudentsManagement();
+                    break;
+                case 'programmes':
+                    loadProgrammesManagement();
+                    break;
+                case 'courses':
+                    loadCoursesManagement();
+                    break;
+                case 'groups':
+                    loadGroupsManagement();
+                    break;
+                case 'sessions':
+                    loadSessionsGrid('all');
+                    break;
+                case 'active-sessions':
+                    loadSessionsGrid('active');
+                    break;
+                case 'all-sessions':
+                    loadAllSessionsTable();
+                    break;
+                case 'create-session':
+                    loadCourseAndGroupOptions();
+                    break;
+                case 'attendance-records':
+                    loadAttendanceRecords();
+                    break;
+                case 'reports':
+                    loadReports();
+                    break;
+            }
+        }
+
+        // Load all admin data initially
+        function loadAllAdminData() {
+            loadDashboardData();
+            loadStudentsManagement();
+            loadProgrammesManagement();
+            loadCoursesManagement();
+            loadGroupsManagement();
+            loadFilterOptions();
+            loadCourseAndGroupOptions();
+            loadModalOptions();
+        }
+
+        // Load filter options for dropdowns
+        function loadFilterOptions() {
+            // Load programmes for filter
+            fetch('../../backend/programmes/get-programmes.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">All Programmes</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(prog => {
+                            options += `<option value="${prog.programme_code}">${prog.programme_name}</option>`;
+                        });
+                    }
+                    document.getElementById('studentProgrammeFilter').innerHTML = options;
+                });
+
+            // Load groups for filter
+            fetch('../../backend/groups/get-groups-dropdown.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">All Groups</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(group => {
+                            options += `<option value="${group.group_id}">${group.group_name}</option>`;
+                        });
+                    }
+                    document.getElementById('studentGroupFilter').innerHTML = options;
+                });
+        }
+
+        // Load modal options
+        function loadModalOptions() {
+            // Load programmes for add student modal
+            fetch('../../backend/programmes/get-programmes.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Programme</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(prog => {
+                            options += `<option value="${prog.programme_code}">${prog.programme_name}</option>`;
+                        });
+                    }
+                    document.getElementById('newStudentProgramme').innerHTML = options;
+                    document.getElementById('editStudentProgramme').innerHTML = options;
+                    document.getElementById('newCourseProgramme').innerHTML = options;
+                    document.getElementById('newGroupProgramme').innerHTML = options;
+                });
+
+            // Load groups for modals
+            fetch('../../backend/groups/get-groups-dropdown.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Group</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(group => {
+                            options += `<option value="${group.group_id}">${group.group_name}</option>`;
+                        });
+                    }
+                    document.getElementById('newStudentGroup').innerHTML = options;
+                    document.getElementById('editStudentGroup').innerHTML = options;
+                    document.getElementById('newCourseGroup').innerHTML = options;
+                });
+
+            // Load courses for new group
+            fetch('../../backend/courses/get-courses.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Course</option>';
+                    if (response.status === 'success' && Array.isArray(response.data)) {
+                        response.data.forEach(course => {
+                            options += `<option value="${course.course_id}">${course.course_name}</option>`;
+                        });
+                    }
+                    document.getElementById('newGroupCourse').innerHTML = options;
+                });
+        }
+
+        // Dashboard data
+        function loadDashboardData() {
+            fetch('../../backend/stats/dashboard-stats.php')
+                .then(res => res.json())
+                .then(response => {
+                    let stats = {};
+                    if (response.status === 'success' && response.data) {
+                        stats = response.data;
+                    } else {
+                        stats = response;
+                    }
+                    
+                    document.getElementById('totalStudents').textContent = stats.total_students || 0;
+                    document.getElementById('totalCourses').textContent = stats.total_courses || 0;
+                    document.getElementById('totalActiveSessions').textContent = stats.active_sessions || 0;
+                    document.getElementById('todayAttendance').textContent = stats.today_attendance || 0;
+                    
+                    // Load recent activity
+                    let activityHtml = '';
+                    if (stats.recent_activity && stats.recent_activity.length > 0) {
+                        stats.recent_activity.forEach(act => {
+                            activityHtml += `<tr>
+                                <td>${act.time || act.created_at}</td>
+                                <td>${act.user || act.student_name}</td>
+                                <td>${act.action || 'Attendance'}</td>
+                                <td>${act.details || act.course_name || ''}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        activityHtml = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>';
+                    }
+                    document.getElementById('recentActivityBody').innerHTML = activityHtml;
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard:', error);
+                    document.getElementById('recentActivityBody').innerHTML = 
+                        '<tr><td colspan="4" class="text-center text-danger">Error loading data</td></tr>';
+                });
+        }
+
+        // Students management
+        function loadStudentsManagement() {
+            const search = document.getElementById('studentSearchInput')?.value || '';
+            const programme = document.getElementById('studentProgrammeFilter')?.value || '';
+            const group = document.getElementById('studentGroupFilter')?.value || '';
+            const role = document.getElementById('studentRoleFilter')?.value || '';
+            
+            let url = '../../backend/students/get-all-students.php?';
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (programme) url += `&programme=${programme}`;
+            if (group) url += `&group=${group}`;
+            if (role) url += `&role=${role}`;
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const students = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (students.length === 0) {
+                        html = '<tr><td colspan="8" class="text-center">No students found</td></tr>';
+                    } else {
+                        students.forEach(student => {
+                            const roleClass = student.roles === 'admin' ? 'danger' : 
+                                            student.roles === 'rep' ? 'warning' :
+                                            student.roles === 'ta' ? 'info' : 
+                                            student.roles === 'lec' ? 'primary' : 'secondary';
+                            
+                            html += `<tr>
+                                <td>${student.student_id || ''}</td>
+                                <td>${student.student_name || ''}</td>
+                                <td>${student.student_mail || ''}</td>
+                                <td>${student.programme_name || student.programme || ''}</td>
+                                <td>${student.group_name ? student.group_name : (student.group_id ? 'Group ' + student.group_id : 'N/A')}</td>
+                                <td><span class="badge badge-${roleClass}">${student.roles || 'user'}</span></td>
+                                <td><span class="badge badge-${student.active == 1 ? 'success' : 'danger'}">${student.active == 1 ? 'Active' : 'Inactive'}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-info action-btn" onclick="editStudent('${student.student_id}')">
+                                        <i class="typcn typcn-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteStudent('${student.student_id}')">
+                                        <i class="typcn typcn-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+                    }
+                    document.getElementById('studentsManagementBody').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading students:', error);
+                    document.getElementById('studentsManagementBody').innerHTML = 
+                        '<tr><td colspan="8" class="text-center text-danger">Error loading students</td></tr>';
+                });
+        }
+
+        // Programmes Management
+        function loadProgrammesManagement() {
+            fetch('../../backend/programmes/get-programmes.php')
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const programmes = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (programmes.length === 0) {
+                        html = '<tr><td colspan="7" class="text-center">No programmes found</td></tr>';
+                    } else {
+                        programmes.forEach(prog => {
+                            html += `<tr>
+                                <td>${prog.programme_code || ''}</td>
+                                <td>${prog.programme_name || ''}</td>
+                                <td>${prog.student_count || prog.num_of_stu || 0}</td>
+                                <td>${prog.course_count || 0}</td>
+                                <td>${prog.group_count || 0}</td>
+                                <td>${prog.year || ''}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info action-btn" onclick="editProgramme('${prog.programme_code}')">
+                                        <i class="typcn typcn-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteProgramme('${prog.programme_code}')">
+                                        <i class="typcn typcn-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+                    }
+                    document.getElementById('programmesManagementBody').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading programmes:', error);
+                    document.getElementById('programmesManagementBody').innerHTML = 
+                        '<tr><td colspan="7" class="text-center text-danger">Error loading programmes</td></tr>';
+                });
+        }
+
+        // Courses management
+        function loadCoursesManagement() {
+            fetch('../../backend/courses/get-courses.php')
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const courses = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (courses.length === 0) {
+                        html = '<tr><td colspan="6" class="text-center">No courses found</td></tr>';
+                    } else {
+                        courses.forEach(course => {
+                            html += `<tr>
+                                <td>${course.course_id || ''}</td>
+                                <td>${course.course_name || ''}</td>
+                                <td>${course.programme_name || course.programme_id || ''}</td>
+                                <td>${course.group_name ? course.group_name : (course.group_id ? 'Group ' + course.group_id : 'N/A')}</td>
+                                <td>${course.created_at || ''}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info action-btn" onclick="editCourse('${course.course_id}')">
+                                        <i class="typcn typcn-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteCourse('${course.course_id}')">
+                                        <i class="typcn typcn-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+                    }
+                    document.getElementById('coursesManagementBody').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading courses:', error);
+                    document.getElementById('coursesManagementBody').innerHTML = 
+                        '<tr><td colspan="6" class="text-center text-danger">Error loading courses</td></tr>';
+                });
+        }
+
+        // Groups Management
+        function loadGroupsManagement() {
+            fetch('../../backend/groups/get-groups.php')
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const groups = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (groups.length === 0) {
+                        html = '<tr><td colspan="7" class="text-center">No groups found</td></tr>';
+                    } else {
+                        groups.forEach(group => {
+                            html += `<tr>
+                                <td>${group.group_id || ''}</td>
+                                <td>${group.group_name || ''}</td>
+                                <td>${group.programme_name || ''}</td>
+                                <td>${group.student_count || 0}</td>
+                                <td>${group.session_count || 0}</td>
+                                <td><span class="badge badge-${group.status === 'active' ? 'success' : 'secondary'}">${group.status || 'active'}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-info action-btn" onclick="editGroup('${group.group_id}')">
+                                        <i class="typcn typcn-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteGroup('${group.group_id}')">
+                                        <i class="typcn typcn-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+                    }
+                    document.getElementById('groupsManagementBody').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading groups:', error);
+                    document.getElementById('groupsManagementBody').innerHTML = 
+                        '<tr><td colspan="7" class="text-center text-danger">Error loading groups</td></tr>';
+                });
+        }
+
+        // Load sessions as grid cards with QR codes
+        function loadSessionsGrid(type = 'all') {
+            let endpoint = '../../backend/sessions/get-all-sessions.php';
+            if (type === 'active') {
+                endpoint = '../../backend/sessions/get-active-sessions.php';
+            } else if (type === 'inactive') {
+                endpoint = '../../backend/sessions/get-inactive-sessions.php';
+            }
+            
+            fetch(endpoint)
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const sessions = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (sessions.length === 0) {
+                        html = '<div class="col-12 text-center">No sessions found</div>';
+                    } else {
+                        sessions.forEach(session => {
+                            const isActive = session.is_active == 1;
+                            const isExpired = session.is_expired || false;
+                            let statusClass = 'active';
+                            let statusText = 'Active';
+                            
+                            if (!isActive) {
+                                statusClass = 'inactive';
+                                statusText = 'Inactive';
+                            } else if (isExpired) {
+                                statusClass = 'expired';
+                                statusText = 'Expired';
+                            }
+                            
+                            html += `
+                                <div class="session-card ${statusClass}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="mb-2">${session.session_code || ''}</h5>
+                                        <span class="badge badge-${statusClass === 'active' ? 'success' : (statusClass === 'expired' ? 'warning' : 'secondary')}">${statusText}</span>
+                                    </div>
+                                    <p class="mb-1"><strong>Course:</strong> ${session.course_name || session.course_id || 'N/A'}</p>
+                                    <p class="mb-1"><strong>Group:</strong> ${session.group_name ? session.group_name : (session.group_id ? 'Group ' + session.group_id : 'N/A')}</p>
+                                    <p class="mb-1"><strong>Created By:</strong> ${session.created_by_name || session.created_by || 'N/A'}</p>
+                                    <p class="mb-1"><strong>Created:</strong> ${session.created_at || ''}</p>
+                                    <p class="mb-1"><strong>Expires:</strong> ${session.expire_at || 'N/A'}</p>
+                                    <p class="mb-2"><strong>Scans:</strong> <span class="badge badge-info">${session.scan_count || 0}</span></p>
+                                    
+                                    <div class="text-center mb-2">
+                                        <div id="qrcode-${session.id}" class="qr-code-small" onclick="showQRCode('${session.QRcode || session.qrcode}', '${session.session_code}')"></div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between mt-2">
+                                        <div>
+                                            ${isActive ? 
+                                                `<button class="btn btn-sm btn-warning action-btn" onclick="deactivateSession(${session.id})">
+                                                    <i class="typcn typcn-power"></i>
+                                                </button>` : 
+                                                `<button class="btn btn-sm btn-success action-btn" onclick="reactivateSession(${session.id})">
+                                                    <i class="typcn typcn-refresh"></i>
+                                                </button>`
+                                            }
+                                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteSession(${session.id})">
+                                                <i class="typcn typcn-trash"></i>
+                                            </button>
+                                        </div>
+                                        <button class="btn btn-sm btn-primary action-btn" onclick="viewSessionDetails('${session.session_code}')">
+                                            <i class="typcn typcn-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Generate QR code after adding to DOM
+                            setTimeout(() => {
+                                generateQRCode(`qrcode-${session.id}`, session.QRcode || session.qrcode || session.session_code);
+                            }, 100);
+                        });
+                    }
+                    
+                    if (type === 'active') {
+                        document.getElementById('activeSessionsGrid').innerHTML = html;
+                    } else {
+                        document.getElementById('sessionsGridContainer').innerHTML = html;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sessions:', error);
+                    const container = type === 'active' ? 'activeSessionsGrid' : 'sessionsGridContainer';
+                    document.getElementById(container).innerHTML = 
+                        '<div class="col-12 text-center text-danger">Error loading sessions</div>';
+                });
+        }
+
+        // Load all sessions table view
+        function loadAllSessionsTable() {
+            fetch('../../backend/sessions/get-all-sessions.php')
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const sessions = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (sessions.length === 0) {
+                        html = '<tr><td colspan="10" class="text-center">No sessions found</td></tr>';
+                    } else {
+                        sessions.forEach(session => {
+                            const isActive = session.is_active == 1;
+                            const isExpired = session.is_expired || false;
+                            let statusText = 'Active';
+                            let statusClass = 'success';
+                            
+                            if (!isActive) {
+                                statusText = 'Inactive';
+                                statusClass = 'secondary';
+                            } else if (isExpired) {
+                                statusText = 'Expired';
+                                statusClass = 'warning';
+                            }
+                            
+                            html += `<tr>
+                                <td>
+                                    <div id="qrcode-table-${session.id}" style="width: 40px; height: 40px; cursor: pointer;" 
+                                         onclick="showQRCode('${session.QRcode || session.qrcode}', '${session.session_code}')"></div>
+                                </td>
+                                <td><span class="badge badge-primary">${session.session_code || ''}</span></td>
+                                <td>${session.course_name || session.course_id || ''}</td>
+                                <td>${session.group_name ? session.group_name : (session.group_id ? 'Group ' + session.group_id : 'N/A')}</td>
+                                <td>${session.created_by_name || session.created_by || ''}</td>
+                                <td>${session.created_at || ''}</td>
+                                <td>${session.expire_at || 'N/A'}</td>
+                                <td><span class="badge badge-${statusClass}">${statusText}</span></td>
+                                <td><span class="badge badge-info">${session.scan_count || 0}</span></td>
+                                <td>
+                                    ${isActive ? 
+                                        `<button class="btn btn-sm btn-warning action-btn" onclick="deactivateSession(${session.id})">
+                                            <i class="typcn typcn-power"></i>
+                                        </button>` : 
+                                        `<button class="btn btn-sm btn-success action-btn" onclick="reactivateSession(${session.id})">
+                                            <i class="typcn typcn-refresh"></i>
+                                        </button>`
+                                    }
+                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteSession(${session.id})">
+                                        <i class="typcn typcn-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                            
+                            // Generate QR code after adding to DOM
+                            setTimeout(() => {
+                                generateQRCode(`qrcode-table-${session.id}`, session.QRcode || session.qrcode || session.session_code);
+                            }, 100);
+                        });
+                    }
+                    document.getElementById('allSessionsManagementBody').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading sessions:', error);
+                    document.getElementById('allSessionsManagementBody').innerHTML = 
+                        '<tr><td colspan="10" class="text-center text-danger">Error loading sessions</td></tr>';
+                });
+        }
+
+        // Generate QR code
+        function generateQRCode(elementId, text) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            // Clear element
+            element.innerHTML = '';
+            
+            // Generate QR code
+            QRCode.toCanvas(text, { width: elementId.includes('table') ? 40 : 50 }, function(error, canvas) {
+                if (error) {
+                    console.error('QR Code error:', error);
+                    element.innerHTML = '<span class="text-muted">QR</span>';
+                } else {
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                    element.appendChild(canvas);
+                }
+            });
+        }
+
+        // Show QR code modal
+        function showQRCode(qrData, sessionCode) {
+            document.getElementById('qrCodeDisplay').innerHTML = '';
+            document.getElementById('qrSessionCode').textContent = sessionCode || '';
+            
+            QRCode.toCanvas(qrData || sessionCode, { width: 200 }, function(error, canvas) {
+                if (error) {
+                    document.getElementById('qrCodeDisplay').innerHTML = '<p class="text-danger">Error generating QR</p>';
+                } else {
+                    canvas.style.width = '100%';
+                    canvas.style.height = 'auto';
+                    document.getElementById('qrCodeDisplay').appendChild(canvas);
+                }
+            });
+            
+            $('#qrCodeModal').modal('show');
+        }
+
+        // Download QR code
+        function downloadQRCode() {
+            const canvas = document.querySelector('#qrCodeDisplay canvas');
+            if (!canvas) return;
+            
+            const link = document.createElement('a');
+            link.download = `qrcode-${document.getElementById('qrSessionCode').textContent || 'session'}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Load attendance records
+        function loadAttendanceRecords() {
+            fetch('../../backend/attendance/get-all-attendance.php?limit=100')
+                .then(res => res.json())
+                .then(response => {
+                    let html = '';
+                    const records = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    if (records.length === 0) {
+                        html = '<tr><td colspan="7" class="text-center">No attendance records found</td></tr>';
+                    } else {
+                        records.forEach(record => {
+                            html += `<tr>
+                                <td>${record.student_id || ''}</td>
+                                <td>${record.student_name || ''}</td>
+                                <td>${record.session_code || ''}</td>
+                                <td>${record.course_name || record.course_id || ''}</td>
+                                <td>${record.group_name ? record.group_name : (record.group_id ? 'Group ' + record.group_id : 'N/A')}</td>
+                                <td>${record.created_at || ''}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteAttendance(${record.id})">
+                                        <i class="typcn typcn-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+                    }
+                    document.getElementById('attendanceRecordsBody').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading attendance:', error);
+                    document.getElementById('attendanceRecordsBody').innerHTML = 
+                        '<tr><td colspan="7" class="text-center text-danger">Error loading attendance</td></tr>';
+                });
+        }
+
+        // Load reports with charts
+        function loadReports() {
+            fetch('../../backend/stats/attendance-stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    // Programme chart
+                    const progCtx = document.getElementById('programmeChart').getContext('2d');
+                    if (programmeChart) programmeChart.destroy();
+                    
+                    programmeChart = new Chart(progCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.programme_labels || ['Programme 1', 'Programme 2'],
+                            datasets: [{
+                                label: 'Attendance',
+                                data: data.programme_data || [0, 0],
+                                backgroundColor: '#4f6ef7'
+                            }]
+                        }
+                    });
+
+                    // Group chart
+                    const groupCtx = document.getElementById('groupChart').getContext('2d');
+                    if (groupChart) groupChart.destroy();
+                    
+                    groupChart = new Chart(groupCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.group_labels || ['Group A', 'Group B'],
+                            datasets: [{
+                                data: data.group_data || [0, 0],
+                                backgroundColor: ['#4f6ef7', '#28a745', '#ffc107', '#dc3545']
+                            }]
+                        }
+                    });
+                });
+        }
+
+        // Load course and group options for forms
+        function loadCourseAndGroupOptions() {
+            // Load courses
+            fetch('../../backend/courses/get-courses.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Course</option>';
+                    const courses = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    courses.forEach(course => {
+                        options += `<option value="${course.course_id}">${course.course_name}</option>`;
+                    });
+                    document.getElementById('adminCourseSelect').innerHTML = options;
+                });
+            
+            // Load groups
+            fetch('../../backend/groups/get-groups-dropdown.php')
+                .then(res => res.json())
+                .then(response => {
+                    let options = '<option value="">Select Group</option>';
+                    const groups = (response.status === 'success' && Array.isArray(response.data)) 
+                        ? response.data 
+                        : (Array.isArray(response) ? response : []);
+                    
+                    groups.forEach(group => {
+                        options += `<option value="${group.group_id}">${group.group_name}</option>`;
+                    });
+                    document.getElementById('adminGroupSelect').innerHTML = options;
+                });
+        }
+
+        // Search and filter functionality
+        document.getElementById('studentSearchInput')?.addEventListener('keyup', function() {
+            loadStudentsManagement();
+        });
+
+        document.getElementById('studentProgrammeFilter')?.addEventListener('change', function() {
+            loadStudentsManagement();
+        });
+
+        document.getElementById('studentGroupFilter')?.addEventListener('change', function() {
+            loadStudentsManagement();
+        });
+
+        document.getElementById('studentRoleFilter')?.addEventListener('change', function() {
+            loadStudentsManagement();
+        });
+
+        // Show add student modal
+        function showAddStudentModal() {
+            $('#addStudentModal').modal('show');
+        }
+
+        // Show add programme modal
+        function showAddProgrammeModal() {
+            $('#addProgrammeModal').modal('show');
+        }
+
+        // Show add course modal
+        function showAddCourseModal() {
+            $('#addCourseModal').modal('show');
+        }
+
+        // Show add group modal
+        function showAddGroupModal() {
+            $('#addGroupModal').modal('show');
+        }
+
+        // Show create session modal
+        function showCreateSessionModal() {
+            $('#createSessionModal').modal('show');
+        }
+
+        // Add student
+        function addStudent() {
+            const data = {
+                action: 'add_student',
+                student_id: document.getElementById('newStudentId').value,
+                student_name: document.getElementById('newStudentName').value,
+                student_mail: document.getElementById('newStudentEmail').value,
+                programme: document.getElementById('newStudentProgramme').value,
+                group_id: document.getElementById('newStudentGroup').value,
+                roles: document.getElementById('newStudentRole').value
+            };
+            
+            fetch('../../backend/config/actions.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    $('#addStudentModal').modal('hide');
+                    loadStudentsManagement();
+                    alert('Student added successfully');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            });
+        }
+
+        // Edit student
+        function editStudent(studentId) {
+            fetch(`../../backend/students/get-student.php?student_id=${studentId}`)
+                .then(res => res.json())
+                .then(response => {
+                    const student = response.status === 'success' ? response.data : response;
+                    
+                    document.getElementById('editStudentId').value = student.student_id || '';
+                    document.getElementById('editStudentName').value = student.student_name || '';
+                    document.getElementById('editStudentEmail').value = student.student_mail || '';
+                    document.getElementById('editStudentProgramme').value = student.programme || '';
+                    document.getElementById('editStudentGroup').value = student.group_id || '';
+                    document.getElementById('editStudentRole').value = student.roles || 'user';
+                    document.getElementById('editStudentStatus').value = student.active || '1';
+                    
+                    $('#editStudentModal').modal('show');
+                });
+        }
+
+        // Update student
+        function updateStudent() {
+            const data = {
+                action: 'edit_student',
+                student_id: document.getElementById('editStudentId').value,
+                student_name: document.getElementById('editStudentName').value,
+                student_mail: document.getElementById('editStudentEmail').value,
+                programme: document.getElementById('editStudentProgramme').value,
+                group_id: document.getElementById('editStudentGroup').value,
+                roles: document.getElementById('editStudentRole').value,
+                active: document.getElementById('editStudentStatus').value
+            };
+            
+            fetch('../../backend/config/actions.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    $('#editStudentModal').modal('hide');
+                    loadStudentsManagement();
+                    alert('Student updated successfully');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            });
+        }
+
+        // Delete student
+        function deleteStudent(studentId) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                fetch('../../backend/config/actions.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_student',
+                        student_id: studentId
+                    })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        loadStudentsManagement();
+                        alert('Student deleted');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                });
+            }
+        }
+
+        // Add programme
+        function addProgramme() {
+            const data = {
+                action: 'add_programme',
+                programme_code: document.getElementById('newProgrammeCode').value,
+                programme_name: document.getElementById('newProgrammeName').value,
+                year: document.getElementById('newProgrammeYear').value
+            };
+            
+            fetch('../../backend/config/actions.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    $('#addProgrammeModal').modal('hide');
+                    loadProgrammesManagement();
+                    alert('Programme added successfully');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            });
+        }
+
+        // Add course
+        function addCourse() {
+            const data = {
+                action: 'add_course',
+                course_id: document.getElementById('newCourseId').value,
+                course_name: document.getElementById('newCourseName').value,
+                programme_id: document.getElementById('newCourseProgramme').value,
+                group_id: document.getElementById('newCourseGroup').value
+            };
+            
+            fetch('../../backend/config/actions.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    $('#addCourseModal').modal('hide');
+                    loadCoursesManagement();
+                    alert('Course added successfully');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            });
+        }
+
+        // Add group
+        function addGroup() {
+            const data = {
+                action: 'add_group',
+                group_name: document.getElementById('newGroupName').value,
+                programme_id: document.getElementById('newGroupProgramme').value,
+                course_id: document.getElementById('newGroupCourse').value,
+                academic_year: document.getElementById('newGroupYear').value
+            };
+            
+            fetch('../../backend/config/actions.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    $('#addGroupModal').modal('hide');
+                    loadGroupsManagement();
+                    alert('Group added successfully');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            });
+        }
+
+        // Create session
+        function adminCreateSession() {
+            const data = {
+                action: 'create_session',
+                course_id: document.getElementById('adminCourseSelect').value,
+                group_id: document.getElementById('adminGroupSelect').value,
+                duration: document.getElementById('adminDuration').value,
+                latitude: document.getElementById('adminLatitude').value,
+                longitude: document.getElementById('adminLongitude').value
+            };
+            
+            if (!data.course_id || !data.group_id) {
+                alert('Please select course and group');
+                return;
+            }
+            
+            fetch('../../backend/config/actions.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    alert('Session created!');
+                    showSection('sessions');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            });
+        }
+
+        // Deactivate session
+        function deactivateSession(sessionId) {
+            if (confirm('Deactivate this session?')) {
+                fetch('../../backend/config/actions.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'deactivate_session',
+                        session_id: sessionId
+                    })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        loadSessionsGrid('active');
+                        loadSessionsGrid('all');
+                    }
+                });
+            }
+        }
+
+        // Reactivate session
+        function reactivateSession(sessionId) {
+            if (confirm('Reactivate this session?')) {
+                fetch('../../backend/config/actions.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'reactivate_session',
+                        session_id: sessionId
+                    })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        loadSessionsGrid('inactive');
+                        loadSessionsGrid('all');
+                    }
+                });
+            }
+        }
+
+        // Delete session
+        function deleteSession(sessionId) {
+            if (confirm('Permanently delete this session?')) {
+                fetch('../../backend/config/actions.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_session',
+                        session_id: sessionId
+                    })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        loadSessionsGrid('all');
+                        loadAllSessionsTable();
+                    }
+                });
+            }
+        }
+
+        // Delete attendance
+        function deleteAttendance(attendanceId) {
+            if (confirm('Delete this attendance record?')) {
+                fetch('../../backend/config/actions.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_attendance',
+                        attendance_id: attendanceId
+                    })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        loadAttendanceRecords();
+                    }
+                });
+            }
+        }
+
+        // Edit functions (placeholder)
+        function editProgramme(code) {
+            alert('Edit programme: ' + code);
+        }
+
+        function deleteProgramme(code) {
+            if (confirm('Delete this programme?')) {
+                alert('Delete programme: ' + code);
+            }
+        }
+
+        function editCourse(courseId) {
+            alert('Edit course: ' + courseId);
+        }
+
+        function deleteCourse(courseId) {
+            if (confirm('Delete this course?')) {
+                alert('Delete course: ' + courseId);
+            }
+        }
+
+        function editGroup(groupId) {
+            alert('Edit group: ' + groupId);
+        }
+
+        function deleteGroup(groupId) {
+            if (confirm('Delete this group?')) {
+                alert('Delete group: ' + groupId);
+            }
+        }
+
+        function viewSessionDetails(sessionCode) {
+            alert('View session: ' + sessionCode);
+        }
+
+        function exportAttendance() {
+            window.location.href = '../../backend/export/attendance.php';
+        }
+
+        // Refresh all data
+        function refreshAllData() {
+            loadDashboardData();
+            alert('Data refreshed');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminSession();
+        });
+    </script>
+</body>
+</html>

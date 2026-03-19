@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Infoctess UEW - Configure Attendance</title>
+    <!-- base:css -->
+    <link rel="stylesheet" href="../vendors/typicons.font/font/typicons.css">
+    <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
+    <!-- endinject -->
+    <!-- plugin css for this page -->
+    <link rel="stylesheet" href="../vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
+    <!-- endinject -->
+    <link rel="shortcut icon" href="../images/favicon.png" />
+    <style>
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #4f6ef7;
+            animation: spin 0.8s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-direction: column;
+            padding: 40px;
+        }
+        .badge-active {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .badge-inactive {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .session-card {
+            border-left: 4px solid #4f6ef7;
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            cursor: pointer;
+        }
+        .card-bg{
+            background-color: #001a8ee6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-scroller">
+        <!-- partial:partials/_navbar.html -->
+        <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+            <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                <a class="navbar-brand brand-logo" href="index.html"><img src="../images/logo.png" alt="logo"/></a>
+                <a class="navbar-brand brand-logo-mini" href="index.html"><img src="../images/logo.png" alt="logo"/></a>
+                <button class="navbar-toggler navbar-toggler align-self-center d-none d-lg-flex" type="button" data-toggle="minimize">
+                    <span class="typcn typcn-th-menu"></span>
+                </button>
+            </div>
+            <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+                <ul class="navbar-nav mr-lg-2">
+                    <li class="nav-item d-none d-lg-flex">
+                        <a class="nav-link" href="#">Calendar</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav navbar-nav-right">
+                    <li class="nav-item d-none d-lg-flex mr-2">
+                        <a class="nav-link" href="#">Help</a>
+                    </li>
+                    <li class="nav-item dropdown d-flex">
+                        <a class="nav-link count-indicator dropdown-toggle" id="messageDropdown" href="#" data-toggle="dropdown">
+                            <i class="typcn typcn-message-typing"></i>
+                            <span class="count bg-success">2</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list">
+                            <p class="mb-0 font-weight-normal float-left dropdown-header">Messages</p>
+                            <a class="dropdown-item preview-item">
+                                <div class="preview-thumbnail">
+                                    <img src="../images/faces/face4.jpg" alt="image" class="profile-pic">
+                                </div>
+                                <div class="preview-item-content flex-grow">
+                                    <h6 class="preview-subject ellipsis font-weight-normal">David Grey</h6>
+                                    <p class="font-weight-light small-text mb-0">The meeting is cancelled</p>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item nav-profile dropdown">
+                        <a class="nav-link dropdown-toggle pl-0 pr-0" href="#" data-toggle="dropdown" id="profileDropdown">
+                            <i class="typcn typcn-user-outline mr-0"></i>
+                            <span class="nav-profile-name profile-name-dash"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown">
+                            <a class="dropdown-item" href="../auth/logout.php">
+                                <i class="typcn typcn-power text-primary"></i> Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- partial -->
+
+        <div class="container-fluid page-body-wrapper">
+            <!-- partial:partials/_sidebar.html -->
+            <nav class="sidebar sidebar-offcanvas" id="sidebar">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <div class="d-flex sidebar-profile">
+                            <div class="sidebar-profile-image">
+                                <img src="../images/faces/image01.jpg" alt="image">
+                            </div>
+                            <div class="sidebar-profile-name">
+                                <p class="sidebar-name nav-name"></p>
+                                <p class="sidebar-designation">Welcome</p>
+                            </div>
+                        </div>
+                        <div class="nav-search">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search...">
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="typcn typcn-zoom"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="typcn typcn-device-desktop menu-icon"></i>
+                            <span class="menu-title">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false">
+                            <i class="typcn typcn-briefcase menu-icon"></i>
+                            <span class="menu-title">Configure</span>
+                            <i class="typcn typcn-chevron-right menu-arrow"></i>
+                        </a>
+                        <div class="collapse" id="ui-basic">
+                            <ul class="nav flex-column sub-menu">
+                                <li class="nav-item"><a class="nav-link active" href="configure.html">Attendance Config</a></li>
+                                <li class="nav-item"><a class="nav-link" href="sessions.html">Sessions</a></li>
+                                <li class="nav-item"><a class="nav-link" href="courses.html">Courses</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <!-- partial -->
+
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <!-- Page Header -->
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h3 class="mb-0 font-weight-bold">Configure Attendance</h3>
+                            <p class="lastLog">Manage active sessions and view attendance records</p>
+                        </div>
+                        <!-- <div class="col-sm-6">
+                            <div class="d-flex align-items-center justify-content-md-end">
+                                <div class="pr-1 mb-3 mb-xl-0">
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createSessionModal">
+                                        <i class="typcn typcn-plus"></i> New Session
+                                    </button>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row mt-3">
+                        <div class="col-md-3 grid-margin stretch-card">
+                            <div class="card card-bg text-white">
+                                <div class="card-body">
+                                    <h5>Active Sessions</h5>
+                                    <h2 class="mb-0" id="activeSessionsCount">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 grid-margin stretch-card">
+                            <div class="card card-bg text-white">
+                                <div class="card-body">
+                                    <h5>Present Today</h5>
+                                    <h2 class="mb-0" id="presentToday">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 grid-margin stretch-card">
+                            <div class="card card-bg text-white">
+                                <div class="card-body">
+                                    <h5>Total Students</h5>
+                                    <h2 class="mb-0" id="totalStudents">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 grid-margin stretch-card">
+                            <div class="card card-bg text-white">
+                                <div class="card-body">
+                                    <h5>Total Courses</h5>
+                                    <h2 class="mb-0" id="totalCourses">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Sessions Table -->
+                    <div class="row">
+                        <div class="col-12 grid-margin">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Active QR Sessions</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Session Code</th>
+                                                    <th>Course</th>
+                                                    <th>Group</th>
+                                                    <th>Created At</th>
+                                                    <th>Expires At</th>
+                                                    <th>Scans</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="activeSessionsBody">
+                                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inactive Sessions Table -->
+                    <div class="row">
+                        <div class="col-12 grid-margin">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Inactive/Expired Sessions</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Session Code</th>
+                                                    <th>Course</th>
+                                                    <th>Group</th>
+                                                    <th>Created At</th>
+                                                    <th>Expired At</th>
+                                                    <th>Total Scans</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="inactiveSessionsBody">
+                                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Attendance Table -->
+                    <div class="row">
+                        <div class="col-12 grid-margin">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Student Attendance Records</h4>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="studentSearch" placeholder="Search student...">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-control" id="sessionFilter">
+                                                <option value="">Filter by Session</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student ID</th>
+                                                    <th>Name</th>
+                                                    <th>Programme</th>
+                                                    <th>Group</th>
+                                                    <th>Present</th>
+                                                    <th>Absent</th>
+                                                    <th>Attendance %</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="studentsBody">
+                                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row - Using your chartjs.html structure -->
+                    <div class="row">
+                        <div class="col-lg-6 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Last 5 Sessions Attendance</h4>
+                                    <canvas id="lineChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Attendance Distribution</h4>
+                                    <canvas id="doughnutChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- content-wrapper ends -->
+
+                <!-- partial:partials/_footer.html -->
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                        <span>Copyright © <a href="https://Infoctess.ct.ws/app/" target="_blank">Infoctess</a> 2026</span>
+                    </div>
+                </footer>
+                <!-- partial -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div class="modal fade" id="createSessionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New QR Session</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="sessionForm">
+                        <div class="form-group">
+                            <label>Course</label>
+                            <select class="form-control" id="courseSelect" required>
+                                <option value="">Select Course</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Group</label>
+                            <select class="form-control" id="groupSelect" required>
+                                <option value="">Select Group</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (minutes)</label>
+                            <input type="number" class="form-control" id="duration" value="60" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createSession()">Create Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- scripts -->
+    <script src="../vendors/js/vendor.bundle.base.js"></script>
+    <script src="../vendors/datatables.net/jquery.dataTables.js"></script>
+    <script src="../vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+    <script src="../vendors/chart.js/Chart.min.js"></script>
+    <script src="../js/off-canvas.js"></script>
+    <script src="../js/hoverable-collapse.js"></script>
+    <script src="../js/template.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/todolist.js"></script>
+    <!-- backend call -->
+    <script src="../backend/config/configMo.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Location</title>
+  <link rel="shortcut icon" href="../images/favicon.png" type="image/x-icon">
+  <style>
+    body{
+      color: white;      
+      background-color: rgb(70, 50, 255);
+      font-size: larger;
+      display: flex;
+      background-size: cover;
+      align-items: center;
+      flex-direction: column;
+      transition: all ease-in-out;
+      animation: infoLocation 5s ease-in-out infinite;
+    }
+
+    @keyframes infoLocation{
+      0%{
+        background-color: rgb(70, 50, 255);
+      }
+      20%{
+        background-color: rgb(25, 0, 255);
+      }
+      40%{
+        background-color: rgb(73, 71, 72);
+      }
+      60%{
+        background-color: rgb(131, 131, 131);
+      }
+      80%{
+        background-color: rgb(24, 18, 57);
+      }
+      100%{
+        background-color: rgb(16, 0, 158);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Please wait whiles fetching your Location</h1>
+  <p style="color: rgb(255, 255, 255);"><u>NB</u>: <i>PLEASE MAKE SURE U GET EVERY LOCAYION PE EVERY SECTION</i></p><br>
+  <p id="coords">Fetching location...</p>
+
+  <script>
+    navigator.geolocation.getCurrentPosition(position => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      // Show on page
+      document.getElementById('coords').textContent =
+        `Latitude: ${latitude}, Longitude: ${longitude}`;
+
+      // Send to server
+      fetch('../backend/data/location.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ latitude, longitude })
+      })
+      .then(res => res.json())
+      .then(data => {
+            document.location.href = './index.html';
+            console.log('Server response:', data)
+      }
+)
+      .catch(err => console.error('Error:', err));
+    }, error => {
+      document.getElementById('coords').textContent =
+        'Unable to fetch location: ' + error.message;
+        setTimeout(()=>{
+          document.location.href = './index.html';
+        }, 10000)
+    });
+  </script>
+</body>
+</html>

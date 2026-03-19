@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Infoctess · Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/save-att.css">
+</head>
+<body>
+
+        <div class="success-overlay" id="successOverlay"></div>
+        <div class="brand">
+            <div class="brand-name">INFOCTESS</div>
+        </div>
+        <div class="status-area">
+            <div class="ring-wrap">
+                <div class="ring"></div>
+                <div class="ring-spinner" id="ringSpinner"></div>
+                <div class="ring-inner" id="ringInner">📡</div>
+            </div>
+            <div class="steps">
+                <div class="step active" id="step1">
+                    <div class="step-dot" id="dot1">1</div>
+                    <div class="step-text">
+                        <div class="step-label">Getting your location</div>
+                        <div class="step-sub" id="sub1">Requesting GPS coordinates…</div>
+                    </div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-dot" id="dot2">2</div>
+                    <div class="step-text">
+                        <div class="step-label">Verifying QR session</div>
+                        <div class="step-sub" id="sub2">Checking class session…</div>
+                    </div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-dot" id="dot3">3</div>
+                    <div class="step-text">
+                        <div class="step-label">Recording attendance</div>
+                        <div class="step-sub" id="sub3">Saving to system…</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="result-banner" id="resultBanner">
+            <div class="result-icon" id="resultIcon"></div>
+            <div id="resultMsg"></div>
+        </div>
+        <button class="retry-btn" id="retryBtn">Try Again</button>
+        <button class="test-btn" id="testLocationBtn">Use Test Location</button>
+        <div class="permission-hint" id="permissionHint">
+            🔒 Click the location icon in your address bar to allow access
+        </div>
+        <div class="debug-info" id="debugInfo"></div>
+        <div class="footer">Attendance Portal</div>
+
+
+<!-- Add your JavaScript here -->
+<script src="../js/save-att.js"></script>
+</body>
+</html>
+
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrcode = urlParams.get('att');
+    let locationRetryCount = 0;
+    const MAX_LOCATION_RETRIES = 1;
+
+    function setStep(n, state, subText) {
+        const step = document.getElementById('step' + n);
+        const dot  = document.getElementById('dot' + n);
+        const sub  = document.getElementById('sub' + n);
+        step.className = 'step ' + state;
+        if (subText) sub.textContent = subText;
+        if (state === 'done') dot.textContent = '✓';
+        if (state === 'error') dot.textContent = '✕';
+        if (state === 'warning') dot.textContent = '⚠';
+    }
+
+    function showResult(success, message, isWarning = false) {
+        const banner = document.getElementById('resultBanner');
+        const icon   = document.getElementById('resultIcon');
+        const msg    = document.getElementById('resultMsg');
+        const ringSpinner = document.getElementById('ringSpinner');
+        const ringInner = document.getElementById('ringInner');
+        
+        ringSpinner.style.display = 'none';
+        
+        if (success) {
+            ringInner.textContent = '✅';
+            banner.className = 'result-banner success';
+            icon.textContent = '✅';
+            msg.textContent = message;
+            document.getElementById('successOverlay').classList.add('show');
+            launchConfetti();
+        } else if (isWarning) {
+            ringInner.textContent = '⚠️';
+            banner.className = 'result-banner warning';
+            icon.textContent = '⚠️';
+            msg.textContent = message;
+            document.getElementById('retryBtn').classList.add('show');
+            document.getElementById('testLocationBtn').classList.add('show');
+        } else {
+            ringInner.textContent = '⚠️';
+            banner.className = 'result-banner failure';
+            icon.textContent = '❌';
+            msg.textContent = message;
+            document.getElementById('retryBtn').classList.add('show');
+            document.getElementById('testLocationBtn').classList.add('show');
+        }
+    }
+
+    function launchConfetti() {
+        const colors = ['#4f6ef7','#7c3aed','#10b981','#f59e0b','#a78bfa'];
+        const card = document.querySelector('.card').getBoundingClientRect();
+        for (let i = 0; i < 28; i++) {
+            setTimeout(() => {
+                const el = document.createElement('div');
+                el.className = 'confetti-dot';
+                el.style.cssText = `left:${card.left + Math.random()*card.width}px;top:${card.top + card.height*0.3}px;background:${colors[i%colors.length]};width:${4+Math.random()*6}px;height:${4+Math.random()*6}px;animation-duration:${0.9+Math.random()*0.8}s;`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1800);
+            }, i * 35);
+        }
+    }
+
+    function fail(stepNum, message, isWarning = false) {
+        setStep(stepNum, isWarning ? 'warning' : 'error', message);
+        showResult(false, message, isWarning);
+    }
+
+    function showDebugInfo(message) {
+        const debug = document.getElementById('debugInfo');
+        debug.textContent = message;
+        debug.classList.add('show');
+        console.log('Debug:', message);
+    }
+
+    function requestLocation(useHighAccuracy = true) {
+        showDebugInfo(`Requesting location (high accuracy: ${useHighAccuracy})...`);
+        
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const { latitude, longitude, accuracy } = pos.coords;
+                setStep(1, 'done', `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (${Math.round(accuracy)}m accuracy)`);
+                document.getElementById('step2').className = 'step active';
+                
+                // Continue with attendance recording
+                fetch('../backend/attendance/save-att.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        qrcode, 
+                        serial: 'qrcode', 
+                        latitude, 
+                        longitude,
+                        accuracy 
+                    })
+                })
+                .then(async r => { 
+                    if (!r.ok) {
+                        const text = await r.text();
+                        throw new Error(`HTTP ${r.status}: ${text.substring(0, 100)}`);
+                    }
+                    return r.json(); 
+                })
+                .then(data => {
+                    setStep(2, 'done', 'Session verified');
+                    document.getElementById('step3').className = 'step active';
+                    
+                    setTimeout(() => {
+                        if (data.status === 'success') {
+                            setStep(3, 'done', 'Marked ✓');
+                            showResult(true, data.message || 'Attendance recorded successfully!');
+                        } else {
+                            setStep(3, 'error', data.message || 'Failed');
+                            fail(3, data.message || 'Verification failed. Try again.');
+                        }
+                    }, 400);
+                })
+                .catch(error => {
+                    showDebugInfo(`Fetch error: ${error.message}`);
+                    fail(2, 'Cannot reach server. Check connection.', true);
+                });
+            },
+            (err) => {
+                showDebugInfo(`Geolocation error ${err.code}: ${err.message}`);
+                
+                // Try fallback to low accuracy if timeout and we haven't retried
+                if (useHighAccuracy && err.code === 3) { // TIMEOUT
+                    if (locationRetryCount < MAX_LOCATION_RETRIES) {
+                        locationRetryCount++;
+                        showDebugInfo('Retrying with low accuracy...');
+                        requestLocation(false);
+                        return;
+                    }
+                }
+                
+                const errorMessages = {
+                    1: {
+                        msg: 'Location access denied. Please allow location access.',
+                        hint: '🔒 Click the lock/location icon in your browser\'s address bar to enable location access.'
+                    },
+                    2: {
+                        msg: 'Position unavailable. Are you indoors? Try moving near a window.',
+                        hint: '📡 Move to an open area with better GPS signal.'
+                    },
+                    3: {
+                        msg: 'Location request timed out. Try again with better signal.',
+                        hint: '⏱️ Check your internet connection and GPS signal.'
+                    }
+                };
+                
+                const errorInfo = errorMessages[err.code] || {
+                    msg: `Location error: ${err.message}`,
+                    hint: 'Please try again or use test location.'
+                };
+                
+                document.getElementById('permissionHint').textContent = errorInfo.hint;
+                document.getElementById('permissionHint').classList.add('show');
+                
+                // For permission denied, we might want to show a more helpful message
+                if (err.code === 1) {
+                    fail(1, errorInfo.msg, true);
+                } else {
+                    fail(1, errorInfo.msg, true);
+                }
+            },
+            { 
+                timeout: useHighAccuracy ? 15000 : 8000,
+                maximumAge: useHighAccuracy ? 0 : 60000,
+                enableHighAccuracy: useHighAccuracy
+            }
+        );
+    }
+
+    // Test location function
+    function useTestLocation() {
+        const testLocations = [
+            { lat: 37.7749, lng: -122.4194, name: 'San Francisco' },
+            { lat: 40.7128, lng: -74.0060, name: 'New York' },
+            { lat: 51.5074, lng: -0.1278, name: 'London' }
+        ];
+        
+        // Use first test location or random
+        const testLoc = testLocations[0];
+        
+        setStep(1, 'warning', `📍 ${testLoc.lat}, ${testLoc.lng} (TEST MODE)`);
+        document.getElementById('step2').className = 'step active';
+        
+        // Show warning in step 2
+        setStep(2, 'active', '⚠️ Using test location');
+        
+        fetch('../backend/attendance/save-att.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                qrcode, 
+                serial: 'qrcode', 
+                latitude: testLoc.lat, 
+                longitude: testLoc.lng,
+                isTestLocation: true 
+            })
+        })
+        .then(async r => { 
+            if (!r.ok) {
+                const text = await r.text();
+                throw new Error(`HTTP ${r.status}`);
+            }
+            return r.json(); 
+        })
+        .then(data => {
+            setStep(2, 'done', 'Session verified (test mode)');
+            document.getElementById('step3').className = 'step active';
+            setTimeout(() => {
+                if (data.status === 'success') {
+                    setStep(3, 'done', 'Marked ✓');
+                    showResult(true, data.message || 'Attendance recorded (test location)!');
+                } else {
+                    setStep(3, 'error', data.message);
+                    fail(3, data.message || 'Verification failed.', true);
+                }
+            }, 400);
+        })
+        .catch(() => {
+            fail(2, 'Server connection failed.', true);
+        });
+    }
+
+    // Check browser support and HTTPS
+    function checkBrowserSupport() {
+        const issues = [];
+        
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
+            issues.push('HTTPS required for location access');
+            showDebugInfo('⚠️ Not using HTTPS - location may be blocked');
+        }
+        
+        if (!navigator.geolocation) {
+            issues.push('Geolocation not supported');
+        }
+        
+        return issues;
+    }
+
+    // Check permission status
+    function checkPermissionAndProceed() {
+        const supportIssues = checkBrowserSupport();
+        if (supportIssues.length > 0) {
+            showDebugInfo('Browser issues: ' + supportIssues.join(', '));
+        }
+        
+        if (!navigator.geolocation) {
+            fail(1, 'Your browser does not support geolocation.', true);
+            return;
+        }
+
+        // Try to query permission status
+        if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({ name: 'geolocation' })
+                .then(permissionStatus => {
+                    showDebugInfo(`Permission status: ${permissionStatus.state}`);
+                    
+                    if (permissionStatus.state === 'denied') {
+                        document.getElementById('permissionHint').classList.add('show');
+                        fail(1, 'Location access is blocked. Please enable it in your browser settings.', true);
+                        return;
+                    }
+                    
+                    // Permission granted or prompt, proceed with location request
+                    requestLocation(true);
+                    
+                    // Listen for permission changes
+                    permissionStatus.onchange = () => {
+                        showDebugInfo(`Permission changed to: ${permissionStatus.state}`);
+                        if (permissionStatus.state === 'granted') {
+                            location.reload();
+                        }
+                    };
+                })
+                .catch(() => {
+                    // Permissions API not fully supported, just try
+                    requestLocation(true);
+                });
+        } else {
+            // No permissions API, just try
+            requestLocation(true);
+        }
+    }
+
+    // Initialize
+    if (!qrcode) {
+        fail(1, 'No QR code in link. Please scan again.', false);
+        document.getElementById('testLocationBtn').classList.add('show');
+    } else {
+        // Show test location button always as fallback
+        document.getElementById('testLocationBtn').classList.add('show');
+        document.getElementById('retryBtn').onclick = () => location.reload();
+        document.getElementById('testLocationBtn').onclick = useTestLocation;
+        
+        // Start the location process
+        checkPermissionAndProceed();
+    }
+
+    // Add manual permission check instruction
+    window.addEventListener('load', () => {
+        if (navigator.permissions) {
+            navigator.permissions.query({ name: 'geolocation' }).then(result => {
+                if (result.state === 'prompt') {
+                    document.getElementById('permissionHint').textContent = '📍 Please allow location access when prompted';
+                    document.getElementById('permissionHint').classList.add('show');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
