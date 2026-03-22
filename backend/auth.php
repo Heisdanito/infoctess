@@ -5,7 +5,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once '.././backend/connection/connection.php';
 
 
-    $email = $_POST['email'] ?? '';
+    $email = $_POST['email'] ?? 'i suspended this';
     $psw  = $_POST['psw'] ?? '';
     $Token = $_POST['key'] . $psw ?? '';
 
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "message" => "Please Enter your Student Id and Student email"
         ]);
     }else{
-        $sql = "SELECT student_id , student_mail , programme FROM students WHERE student_id = '$psw' AND student_mail = '$email' ";
+        $sql = "SELECT student_id , student_mail , programme FROM students WHERE student_id = '$psw'  ";
         $result = $conn->query($sql);
         //check for  valid credentials
         if(mysqli_num_rows($result) > 0 ){

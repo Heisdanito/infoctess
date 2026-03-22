@@ -35,7 +35,7 @@ $(document).ready(function(){
     $("#sendAuth").click( async ()=>{
         
         const psw = $("#exampleInputPassword1").val();
-        const email = $("#exampleInputEmail1").val();
+//        const email = $("#exampleInputEmail1").val();
 
         Token();
 
@@ -43,7 +43,7 @@ $(document).ready(function(){
 
             url: '../backend/auth.php',
             method: "POST",
-            data: { psw : psw, email: email , key: key },
+            data: { psw : psw, key: key },
             success: await function(response){
 
                 let data = JSON.parse(response)
