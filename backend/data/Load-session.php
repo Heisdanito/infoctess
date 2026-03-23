@@ -3,7 +3,7 @@ header("Content-Type: application/json");
 session_start();
 require_once '../../backend/connection/connection.php';
 
-$student_id = $_SESSION['student_id'];
+$student_id = $_SESSION['student_id'] ?? null;
 
 $sql = $conn->query("SELECT student_id, roles, programme, group_id 
                      FROM students 
