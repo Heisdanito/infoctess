@@ -1,11 +1,11 @@
 <?php 
 header("Content-Type: application/json");
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 session_start();
 //verify connection
 require_once '../../backend/connection/connection.php';
 $session_code =  $_SESSION['qr_session'] ?? null;
-$student_id = $_SESSION['student_id'] ?? 5262140032 ;
+$student_id = $_SESSION['student_id'] ?? null;
 $session_course = $_SESSION['Activecourse']  ?? null ;
 
 $stmt_bounce = $conn->query("SELECT QRcode , is_active , session_code 
