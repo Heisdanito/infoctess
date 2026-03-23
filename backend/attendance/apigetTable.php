@@ -1,6 +1,6 @@
 <?php 
 header("Content-Type: application/json");
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 session_start();
 //verify connection
 require_once '../../backend/connection/connection.php';
