@@ -19,8 +19,7 @@ if ($sql && mysqli_num_rows($sql) > 0) {
     $student_group = $_SESSION['group_id'];
 
     // Get all group rows for this student
-    $sql2 = $conn->query("SELECT * FROM groups WHERE group_id = '$student_group'");
-
+$sql2 = $conn->query("SELECT * FROM `groups` WHERE `group_id` = '$student_group'");
     if ($sql2 && mysqli_num_rows($sql2) > 0) {
         $courses = [];
 
