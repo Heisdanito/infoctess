@@ -5,7 +5,7 @@ session_start();
 //verify connection
 require_once '../../backend/connection/connection.php';
 $session_code =  $_SESSION['qr_session'] ?? null;
-$student_id = $_SESSION['student_id'] ?? null;
+$student_id = $_SESSION['student_id'] ?? 5262140032 ;
 $session_course = $_SESSION['Activecourse']  ?? null ;
 
 $stmt_bounce = $conn->query("SELECT QRcode , is_active , session_code 
