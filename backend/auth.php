@@ -1,57 +1,63 @@
 <?php
 
 session_start();
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once '.././backend/connection/connection.php';
 
+require_once '.././backend/connection/connection.php';
 
-    $email = $_POST['email'] ?? 'i suspended this';
-    $psw  = $_POST['psw'] ?? '';
-    $Token = $_POST['key'] . $psw ?? '';
+// Capture any PHP errors/notices to return as JSON
+ob_start();
 
-    if(empty($Token)){
-        echo json_encode([
-            "status" => "Error key Stu",
-            "message" => "System error please try again..."
-        ]);
-    }
+$email = $_POST['email'] ?? 'i suspended this';
+$psw  = $_POST['psw'] ?? ''; 
+$Token = $_POST['key'] ?? '';
 
-     $email = $conn->real_escape_string($email); 
-     $psw = $conn->real_escape_string($psw);
+// Default index if null
+$index = 5262140032;
 
-    if(empty($email) && empty($psw)){
-        echo json_encode([
-            "status" => "error",
-            "message" => "Please Enter your Student Id and Student email"
-        ]);
-    }else{
-        $sql = "SELECT student_id , student_mail , programme FROM students WHERE student_id = '$psw'  ";
-        $result = $conn->query($sql);
-        //check for  valid credentials
-        if(mysqli_num_rows($result) > 0 ){
-            //get token from 
+if(empty($Token)){
+    http_response_code(400);
+    echo json_encode([
+        "status" => "Error key Stu",
+        "message" => "System error please try again..."
+    ]);
+    exit;
+}
 
-            require_once '.././backend/token/activeToken.php';
+$email = $conn->real_escape_string($email); 
+$psw = $conn->real_escape_string($psw);
 
-                $_SESSION['token'] = $severToken;
-                //build redirection 
-                echo json_encode([
-                    "status" => "JWTsuccess",
-                    "message" => "call for redirection",
-                    "nextPage" => "../backend/token/verifyActivetoken.php"
-                ]);              
-        }else{
-            echo json_encode([
-                "status" => "Login failed",
-                "message" => "Invalid Credentials."
-            ]);        
-        }
-    }
-
-} else {
+if(empty($email) && empty($psw)){
+    http_response_code(400);
     echo json_encode([
         "status" => "error",
-        "message" => "Only  requests are allowed."
+        "message" => "Please Enter your Student Id and Student email"
     ]);
+    exit;
+} else {
+    $sql = "SELECT student_id , student_mail , programme FROM students WHERE student_id = '$psw'  ";
+    $result = $conn->query($sql);
+    
+    //check for valid credentials
+    if($result && mysqli_num_rows($result) > 0 ){ 
+        //get token from 
+        require_once '.././backend/token/activeToken.php';
+
+        $_SESSION['token'] = $severToken ?? $index;
+        //build redirection 
+        http_response_code(200);
+        echo json_encode([
+            "status" => "JWTsuccess",
+            "message" => "call for redirection",
+            "nextPage" => "../backend/token/verifyActivetoken.php"
+        ]);              
+    } else {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "Login failed",
+            "message" => "Invalid Credentials."
+        ]);        
+    }
 }
+
+ob_end_flush();
 ?>
