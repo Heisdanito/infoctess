@@ -38,7 +38,7 @@ $student_group_id = $student['group_id'];
 $student_programme = $student['programme'];
 
 // Verify group programme
-$sql_group = $conn->query("SELECT group_id , programme_id FROM groups
+$sql_group = $conn->query("SELECT group_id , programme_id FROM `groups`
                            WHERE group_id = '$student_group_id'
                            AND programme_id = '$student_programme'  ");
 
