@@ -30,7 +30,7 @@ if(!isset($_SESSION['token'])){
                             echo "done"; 
                             echo "
                             <script>
-                                window.location.href = '../../app/location.php'
+                                window.location.href = '../../app/location.html'
                             </script>
                         ";
                     }else{
