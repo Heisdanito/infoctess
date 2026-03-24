@@ -11,7 +11,7 @@ $longitude = $data['longitude'] ?? null;
 if ($latitude && $longitude) {
     $_SESSION['latitude'] = $latitude;
     $_SESSION['longitude'] = $longitude;
-    header("Location: ./index.html");
+  ;
 
     echo json_encode([
         "status" => "success",
