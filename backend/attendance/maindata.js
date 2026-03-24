@@ -66,7 +66,7 @@ if ($('#circleProgress6').length) {
       Countdata = progressData.percentage;
       bar.animate(progressData.percentage / 100);
     } catch (error) {
-      console.error("Progress bar update error:", error);
+      console.error("Progress bar update error:");
     }
   }, 2000);
 }
