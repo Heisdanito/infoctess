@@ -1,27 +1,42 @@
-<?php
-session_start();
+// Call this on your login/landing page
+function getLocationAndProceed() {
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
 
-$data = json_decode(file_get_contents("php://input"), true);
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            const latitude  = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
-$latitude  = $data['latitude']  ?? null;
-$longitude = $data['longitude'] ?? null;
-
-if (!$latitude || !$longitude) {
-    echo json_encode([
-        "status"  => "failed",
-        "message" => "latitude and longitude are required"
-    ]);
-    exit;
+            fetch("location.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ latitude, longitude })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    window.location.href = "main.php"; // redirect to main page
+                } else {
+                    alert("Failed to save location: " + data.message);
+                }
+            })
+            .catch(err => {
+                alert("Error saving location: " + err.message);
+            });
+        },
+        function (error) {
+            alert("Could not get your location: " + error.message);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
 }
 
-$_SESSION['latitude']  = $latitude;
-$_SESSION['longitude'] = $longitude;
-
-echo json_encode([
-    "status"    => "success",
-    "message"   => "Location saved",
-    "latitude"  => $latitude,
-    "longitude" => $longitude
-]);
-exit;
-?>
+// Auto-run when page loads
+getLocationAndProceed();
