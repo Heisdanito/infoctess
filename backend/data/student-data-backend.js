@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             bar.animate(0.7); // Example animation
         } catch (e) {
-            console.warn("circleProgress6 init failed:", e);
+            console.warn("circleProgress6 init failed:");
         }
     }
 
