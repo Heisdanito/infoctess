@@ -12,13 +12,13 @@ if (!$conn) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id    = $_SESSION['student_id'] ?? null;
-    $currentCourse = $_SESSION['Activecourse'] ?? "EDF111"; // fallback course code
+    $currentCourse = $_SESSION['Activecourse'] ?? null; // fallback course code
 
     // Location defaults
-    $latitude  = $_SESSION['latitude']  ?? 0.434342;
-    $longitude = $_SESSION['longitude'] ?? 6.54532;
+    $latitude  = $_SESSION['latitude']  ?? null;
+    $longitude = $_SESSION['longitude'] ?? null;
 
     // Step 1: Ensure group_id is set
     if (!isset($_SESSION['group_id'])) {
