@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     require_once '../../backend/connection/connection.php';
 
     $student_id    = $_SESSION['student_id'] ?? null;
-    $currentCourse = $_SESSION['Activecourse'] ?? EDF111 ;//null;
+    $currentCourse = $_SESSION['Activecourse'] ?? null ;
 
     // Capture location from JSON body
     // $input     = json_decode(file_get_contents("php://input"), true);
