@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
     // Step 1: Ensure group_id is set
     if (!isset($_SESSION['group_id'])) {
-        $sql = $conn->query("SELECT * FROM group_main
+        $sql = $conn->query("SELECT * FROM groups
                              WHERE (group_rep_id = '$student_id' OR group_rep_id_2 = '$student_id') 
                              AND status = 'active'");
         if ($sql && mysqli_num_rows($sql) > 0) {   
