@@ -3,6 +3,8 @@ let studentId = null;
 let groupId = null;
 let allCourses = [];
 
+try{
+
 // Initialize progress circle
 const circleContainer = document.getElementById('attendanceProgress');
 if (circleContainer) {
@@ -22,7 +24,7 @@ if (circleContainer) {
         }
     });
 }
-
+}catch(e => console.log(e))
 // Mobile menu toggle
 document.addEventListener('DOMContentLoaded', function() {
     // Load student info first
