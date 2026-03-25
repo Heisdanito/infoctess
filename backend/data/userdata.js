@@ -17,7 +17,7 @@ const getData = async (callback) => {
                 if(userData.group_id !== "" && userData.code !== "" && userData.code_b !== "" && userData.code_b !== "none"){
                     const Verifyattendace = new QRCode(
                         document.getElementById('verifySpot'),{
-                           text: `https://192.168.43.118/infotes/main/app/assess.html?att=${userData.code_b}`,
+                           text: `https://infoctess-production.up.railway.app/app/assess.html?att=${userData.code_b}`,
                            height: 200,
                            width:  200,
                            correctLevel:QRCode.CorrectLevel.H
