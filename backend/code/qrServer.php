@@ -1,32 +1,37 @@
 <?php
-use Dom\Mysql;
-
 header("Content-Type: application/json");
+session_start();
+require_once '../../backend/connection/connection.php';
+
+// Ensure database connection exists
+if (!$conn) {
+    echo json_encode([
+        "status" => "failed",
+        "message" => "Database connection error"
+    ]);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    session_start();    
-    require_once '../../backend/connection/connection.php';
-
     $student_id    = $_SESSION['student_id'] ?? null;
-    $currentCourse = $_SESSION['Activecourse'] ?? null ;
+    $currentCourse = $_SESSION['Activecourse'] ?? "EDF111"; // fallback course code
 
-    // Capture location from JSON body
-    // $input     = json_decode(file_get_contents("php://input"), true);
-    // $latitude  = $input['latitude'] ?? null;
-    // $longitude = $input['longitude'] ?? null;
-
-    // Store location in session for later use
-    $latitude = $_SESSION['latitude'] ?? 0.434342;
-    $longitude  = $_SESSION['longitude'] ?? 6.54532;
+    // Location defaults
+    $latitude  = $_SESSION['latitude']  ?? 0.434342;
+    $longitude = $_SESSION['longitude'] ?? 6.54532;
 
     // Step 1: Ensure group_id is set
     if (!isset($_SESSION['group_id'])) {
-        $sql = $conn->query("SELECT * FROM groups
-                             WHERE (group_rep_id = '$student_id' OR group_rep_id_2 = '$student_id') 
-                             AND status = 'active'");
-        if ($sql && mysqli_num_rows($sql) > 0) {   
-            $row = mysqli_fetch_assoc($sql);
-            $_SESSION['group_id'] = $row['group_id']; 
+        $stmt = $conn->prepare("SELECT group_id FROM `groups`
+                                WHERE (group_rep_id = ? OR group_rep_id_2 = ?) 
+                                AND status = 'active'");
+        $stmt->bind_param("ss", $student_id, $student_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $_SESSION['group_id'] = $row['group_id'];
         } else {
             echo json_encode([
                 "status" => "failed",
@@ -39,21 +44,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $mygroup = $_SESSION['group_id'];
 
     // Step 2: Check if this group already has an active QR session
-    $checkActive = $conn->query("SELECT * FROM qrcode 
-                                 WHERE created_by = '$student_id' 
-                                 AND is_active = '1' 
-                                 AND group_id = '$mygroup'");
+    $stmt = $conn->prepare("SELECT QRcode, session_code FROM qrcode 
+                            WHERE created_by = ? AND is_active = 1 AND group_id = ?");
+    $stmt->bind_param("ss", $student_id, $mygroup);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if ($checkActive && mysqli_num_rows($checkActive) > 0) {
-        $row = mysqli_fetch_assoc($checkActive);
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
         $_SESSION['qr_session'] = $row['session_code'];
         echo json_encode([
-            "status"  => "success",
-            "message" => "You already have an active session.",
-            "code"    => $row['QRcode'],
-            "code_b"  => $row['session_code'],
-            "latitude"  => $_SESSION['latitude'] ?? null,
-            "longitude" => $_SESSION['longitude'] ?? null
+            "status"    => "success",
+            "message"   => "You already have an active session.",
+            "code"      => $row['QRcode'],
+            "code_b"    => $row['session_code'],
+            "latitude"  => $latitude,
+            "longitude" => $longitude
         ]);
         exit;
     }
@@ -72,18 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
     $sessionQr = rand(0,10000) . "UEW" . $code . "QR" . rand(-9000 , 1223947) ."heis";
 
-    //  Correct INSERT with matching columns and placeholders
+    // Insert new QR session
     $stmt = $conn->prepare("INSERT INTO qrcode 
         (QRcode, session_code, longitude, latitude, course_id, group_id, is_active, created_by, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
     $isActive = 1;
     $stmt->bind_param(
-        "ssssssss",
+        "ssssssis",
         $cc_QRCode,
         $sessionQr,
-        $_SESSION['longitude'],
-        $_SESSION['latitude'],
+        $longitude,
+        $latitude,
         $currentCourse,
         $mygroup,
         $isActive,
@@ -98,8 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             "status"    => "success",
             "code"      => $cc_QRCode,
             "code_b"    => $sessionQr,
-            "latitude"  => $_SESSION['latitude'],
-            "longitude" => $_SESSION['longitude']
+            "latitude"  => $latitude,
+            "longitude" => $longitude
         ]);
     } else {
         echo json_encode([
