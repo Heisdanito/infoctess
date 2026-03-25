@@ -1,70 +1,65 @@
-let QRCode_count = 0;
+// ── Get location with retry ───────────────────────────────────────────────
+function getLocation(callback) {
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            callback(position.coords.latitude, position.coords.longitude);
+        },
+        error => {
+            // Failed — retry once
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    callback(position.coords.latitude, position.coords.longitude);
+                },
+                error => {
+                    alert("Location access is required. Please enable location and try again.");
+                }
+            );
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
 
-// ── Set course before starting session ────────────────────────────────────
+
+// ── Set course ────────────────────────────────────────────────────────────
 $("#setC").click(() => {
     const activeCourse = $("#selectedCourse").val();
 
-    if (!activeCourse) {
-        alert("Please select a course first");
-        return;
-    }
+    getLocation((latitude, longitude) => {
+        const data = {
+            name:      activeCourse,
+            latitude:  latitude,
+            longitude: longitude
+        };
 
-    navigator.geolocation.getCurrentPosition(
-        position => {
-            const latitude  = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            const data = {
-                name:      activeCourse,
-                latitude:  latitude,
-                longitude: longitude
-            };
-
-            fetch('../backend/makeSet.php', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(data)
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response.json();
-            })
-            .then(result => {
-                console.log('Server response:', result);
-                $(".set").remove();
-                $(".session-status").append(`<label class="form-check-label set">${result.data}</label>`);
-                $('.startClass').fadeIn();
-                $("#showession").fadeIn();
-                $('#setC').fadeOut();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Failed to set course. Check your connection and try again.");
-            });
-        },
-        error => {
-            alert("Location access denied. Please enable location and try again.");
-        }
-    );
+        fetch('../backend/makeSet.php', {
+            method:  'POST',
+            body:    JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log('Server response:', result);
+            $(".set").remove();
+            $(".session-status").append(`<label class="form-check-label set">${result.data}</label>`);
+            $('.startClass').fadeIn();
+            $("#showession").fadeIn();
+            $('#setC').fadeOut();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
 });
 
-// ── Start class / Generate QR ─────────────────────────────────────────────
+
+// ── Generate QR ───────────────────────────────────────────────────────────
 $(".startClass").click(() => {
 
     async function generateQRcode(callBackData) {
-        navigator.geolocation.getCurrentPosition(async position => {
-            const latitude  = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            let qrCodeurl = "../backend/code/qrServer.php";
-
-            await fetch(qrCodeurl, {
+        getLocation(async (latitude, longitude) => {
+            await fetch("../backend/code/qrServer.php", {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    latitude:  latitude,
-                    longitude: longitude
-                })
+                body:    JSON.stringify({ latitude, longitude })
             })
             .then(res => res.json())
             .then(data => {
@@ -75,12 +70,8 @@ $(".startClass").click(() => {
                 }
             })
             .catch(e => {
-                console.error("QR generation error:", e);
-                alert("Location service is down. Generate a new one and try again.");
+                alert("Please your location service is down, generate new one and try again");
             });
-
-        }, error => {
-            alert("Location access denied. Please enable location and try again.");
         });
     }
 
@@ -96,18 +87,12 @@ $(".startClass").click(() => {
 
             if (QRCode_count < 1) {
                 new QRCode(document.getElementById('verifySpot'), {
-                    text:         uri,
-                    height:       200,
-                    width:        200,
-                    correctLevel: QRCode.CorrectLevel.H
+                    text: uri, height: 200, width: 200, correctLevel: QRCode.CorrectLevel.H
                 });
             }
 
             new QRCode(document.getElementById('verifySpot2'), {
-                text:         uri,
-                height:       400,
-                width:        400,
-                correctLevel: QRCode.CorrectLevel.H
+                text: uri, height: 400, width: 400, correctLevel: QRCode.CorrectLevel.H
             });
 
             $("#setC").fadeOut();
@@ -115,31 +100,4 @@ $(".startClass").click(() => {
     }
 
     generateQRcode(codePreview);
-});
-
-// ── Modal controls ────────────────────────────────────────────────────────
-$('.startClass').fadeOut();
-
-$("#data-dismiss").click(() => {
-    $(".modal-backdrop").fadeOut();
-    $("#loadin").fadeOut();
-    $("body").removeClass('modal-open');
-});
-
-$("#loadSession").click(() => {
-    $(".modal-backdrop").show();
-    $("#loadin").show();
-    $("body").addClass('modal-open');
-});
-
-$("#showession").click(() => {
-    $(".modal-backdrop").fadeIn();
-    $("#loadin").fadeIn();
-    $("body").addClass('modal-open');
-});
-
-$("#CloseM").click(() => {
-    $(".modal-backdrop").fadeOut();
-    $("#loadin").fadeOut();
-    $("body").removeClass('modal-open');
 });
