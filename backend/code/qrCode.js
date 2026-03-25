@@ -1,19 +1,17 @@
-// ── Get location with retry ───────────────────────────────────────────────
-function getLocation(callback) {
+// ── Get location — keeps retrying silently until it succeeds ─────────────
+function getLocation(callback, retries = 5) {
     navigator.geolocation.getCurrentPosition(
         position => {
             callback(position.coords.latitude, position.coords.longitude);
         },
         error => {
-            // Failed — retry once
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    callback(position.coords.latitude, position.coords.longitude);
-                },
-                error => {
-                    alert("Location access is required. Please enable location and try again.");
-                }
-            );
+            if (retries > 0) {
+                // Silent retry
+                setTimeout(() => getLocation(callback, retries - 1), 1000);
+            } else {
+                // All retries failed — bypass with null
+                callback(null, null);
+            }
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -32,8 +30,8 @@ $("#setC").click(() => {
         };
 
         fetch('../backend/makeSet.php', {
-            method:  'POST',
-            body:    JSON.stringify(data)
+            method: 'POST',
+            body:   JSON.stringify(data)
         })
         .then(response => response.json())
         .then(result => {
@@ -70,7 +68,7 @@ $(".startClass").click(() => {
                 }
             })
             .catch(e => {
-                alert("Please your location service is down, generate new one and try again");
+                console.error("QR generation error:", e);
             });
         });
     }
