@@ -3,12 +3,12 @@ use Dom\Mysql;
 
 header("Content-Type: application/json");
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     session_start();    
     require_once '../../backend/connection/connection.php';
 
     $student_id    = $_SESSION['student_id'] ?? null;
-    $currentCourse = $_SESSION['Activecourse'] ?? null;
+    $currentCourse = $_SESSION['Activecourse'] ?? EDF111 ;//null;
 
     // Capture location from JSON body
     // $input     = json_decode(file_get_contents("php://input"), true);
@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // $longitude = $input['longitude'] ?? null;
 
     // Store location in session for later use
-    $latitude = $_SESSION['latitude'];
-    $longitude  = $_SESSION['longitude'];
+    $latitude = $_SESSION['latitude'] ?? 0.434342;
+    $longitude  = $_SESSION['longitude'] ?? 6.54532;
 
     // Step 1: Ensure group_id is set
     if (!isset($_SESSION['group_id'])) {
