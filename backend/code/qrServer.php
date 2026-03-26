@@ -12,7 +12,7 @@ if (!$conn) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== '') {
     $student_id    = $_SESSION['student_id'] ?? null;
     $currentCourse = $_SESSION['Activecourse'] ?? null; // fallback course code
 
