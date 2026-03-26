@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] !== '') {
 
         if ($result && $result->num_rows > 0) {
             $row = $result->fetch_assoc();
-            $_SESSION['group_id'] = $row['group_id'];
+            $mygroup = $row['group_id'];
         } else {
             echo json_encode([
                 "status" => "failed",
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] !== '') {
             exit;
         }
     }
-    $mygroup = $_SESSION['group_id'];
+    $_SESSION['group_id'] = $mygroup;
 
     // Step 2: Check if this group already has an active QR session
     $stmt = $conn->prepare("SELECT QRcode, session_code FROM qrcode 
