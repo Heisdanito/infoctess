@@ -19,29 +19,31 @@ if ($_SERVER['REQUEST_METHOD'] !== '') {
     // Location defaults
     $latitude  = $_SESSION['latitude']  ?? 5.323444;//null;
     $longitude = $_SESSION['longitude'] ?? 0.323444 ;//null;
+// Step 1: Ensure group_id is set
+if (!isset($_SESSION['group_id'])) {
+    $stmt = $conn->prepare("SELECT group_id FROM `groups`
+                            WHERE (group_rep_id = ? OR group_rep_id_2 = ?) 
+                            AND status = 'active'");
+    $stmt->bind_param("ss", $student_id, $student_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    // Step 1: Ensure group_id is set
-    if (!isset($_SESSION['group_id'])) {
-        $stmt = $conn->prepare("SELECT group_id FROM `groups`
-                                WHERE (group_rep_id = ? OR group_rep_id_2 = ?) 
-                                AND status = 'active'");
-        $stmt->bind_param("ss", $student_id, $student_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $mygroup = $row['group_id'];
-        } else {
-            echo json_encode([
-                "status" => "failed",
-                "code"   => "Group Error Database not set",
-                "code_b" => "Your group can't be found or is not updated. Contact infotess admin."
-            ]);
-            exit;
-        }
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $_SESSION['group_id'] = $row['group_id'];
+    } else {
+        echo json_encode([
+            "status" => "failed",
+            "code"   => "Group Error Database not set",
+            "code_b" => "Your group can't be found or is not updated. Contact infotess admin."
+        ]);
+        exit;
     }
-    $_SESSION['group_id'] = $mygroup;
+}
+
+// ✅ Always set $mygroup from session after the check
+$mygroup = $_SESSION['group_id'];
+
 
     // Step 2: Check if this group already has an active QR session
     $stmt = $conn->prepare("SELECT QRcode, session_code FROM qrcode 
