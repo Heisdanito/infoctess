@@ -22,7 +22,7 @@ if (!$student_id) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== '') {
     $currentCourse = $_SESSION['Activecourse'] ?? null;
 
     // Location defaults
