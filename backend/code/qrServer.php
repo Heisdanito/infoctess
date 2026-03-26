@@ -79,22 +79,24 @@ if ($_SERVER['REQUEST_METHOD'] !== '') {
     $sessionQr = rand(0,10000) . "UEW" . $code . "QR" . rand(-9000 , 1223947) ."heis";
 
     // Insert new QR session
-    $stmt = $conn->prepare("INSERT INTO qrcode 
-        (QRcode, session_code, longitude, latitude, course_id, group_id, is_active, created_by, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        $serialStatus = 'qrcode'; // or whatever default you want
+        $stmt = $conn->prepare("INSERT INTO qrcode 
+            (QRcode, session_code, longitude, latitude, course_id, group_id, is_active, created_by, serial_status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        
+        $stmt->bind_param(
+            "ssssssiss",
+            $cc_QRCode,
+            $sessionQr,
+            $longitude,
+            $latitude,
+            $currentCourse,
+            $mygroup,
+            $isActive,
+            $student_id,
+            $serialStatus
+        );
 
-    $isActive = 1;
-    $stmt->bind_param(
-        "ssssssis",
-        $cc_QRCode,
-        $sessionQr,
-        $longitude,
-        $latitude,
-        $currentCourse,
-        $mygroup,
-        $isActive,
-        $student_id
-    );
 
     $result_sql = $stmt->execute();
     $_SESSION['qr_session'] = $sessionQr;
