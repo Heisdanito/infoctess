@@ -8,7 +8,7 @@ $db_user = "avnadmin";
 $db_psw  = "AVNS_ZFYiFvpqdF-G5jN0vXu";
 $db_name = "defaultdb";
 $port    = 21225;
-$ca_path = __DIR__ . '/../../ca.pem';
+$ca_path = './ca.pem';
 
 if (!file_exists($ca_path)) {
     echo json_encode(["status" => "error", "message" => "ca.pem not found"]);
