@@ -1,53 +1,81 @@
 <?php
+header("Content-Type: application/json");
 session_start();
-// Check if user is logged in
-require '../../backend/connection/connection.php';
-$student_id = $_SESSION['student_id'] ?? '';
-$s = 1;
-// Use prepared statement to prevent SQL injection
-$stmt = $conn->prepare("SELECT created_at FROM QRCode WHERE  is_active = ? ");
-$stmt->bind_param("s", $s);
+
+// ── Inline connection ──────────────────────────────────────────────────────
+$db_host = "mysql-291ab10a-heisdanito-7ee7.b.aivencloud.com";
+$db_user = "avnadmin";
+$db_psw  = "AVNS_ZFYiFvpqdF-G5jN0vXu";
+$db_name = "defaultdb";
+$port    = 21225;
+$ca_path = __DIR__ . '/../../ca.pem';
+
+if (!file_exists($ca_path)) {
+    echo json_encode(["status" => "error", "message" => "ca.pem not found"]);
+    exit;
+}
+try {
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    $conn = new mysqli();
+    $conn->ssl_set(NULL, NULL, $ca_path, NULL, NULL);
+    $conn->real_connect($db_host, $db_user, $db_psw, $db_name, $port, NULL, MYSQLI_CLIENT_SSL);
+} catch (Exception $e) {
+    echo json_encode(["status" => "error", "message" => "DB connect failed: " . $e->getMessage()]);
+    exit;
+}
+
+// ── Check active QR session ────────────────────────────────────────────────
+$isActive = 1;
+$stmt = $conn->prepare("SELECT created_at FROM qrcode WHERE is_active = ? ORDER BY created_at DESC LIMIT 1");
+$stmt->bind_param("i", $isActive);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($row = $result->fetch_assoc()) {
-    $createdAt = $row['created_at'];
-
-    // Convert to DateTime objects
+    $createdAt       = $row['created_at'];
     $createdDateTime = new DateTime($createdAt);
     $currentDateTime = new DateTime("now");
+    $interval        = $createdDateTime->diff($currentDateTime);
+    $totalMinutes    = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
 
-    // Calculate difference
-    $interval = $createdDateTime->diff($currentDateTime);
+    // Expire after 2 hours 10 minutes (130 minutes)
+    if ($totalMinutes > 130) {
+        $stmt->close();
 
-    // Convert difference to total minutes
-    $totalMinutes = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
+        // Deactivate expired QR codes
+        $deactivate  = 0;
+        $activeCheck = 1;
+        $stmt2 = $conn->prepare("UPDATE qrcode SET expire_at = NOW(), is_active = ? WHERE is_active = ?");
+        $stmt2->bind_param("ii", $deactivate, $activeCheck);
 
-    // Threshold: 2 hours 10 minutes = 130 minutes
-    $thresholdMinutes = 130;
-    $s = 1;
-    if ($totalMinutes > $thresholdMinutes) {
-        $sql = "UPDATE qrcode SET expire_at = NOW(), is_active = ? WHERE is_active = ?"; $stmt = $conn->prepare($sql); // Here is_active is an integer, student_id is a string 
-            $isActive = 0; 
-            $stmt->bind_param("is", $isActive, $s); 
-            if ($stmt->execute()) { 
-                // echo json_encode([ 
-                //     "status" => "success",
-                //     "message" => "QR code egenerated for 2hr "
-                // ]);
-            }
+        if ($stmt2->execute()) {
+            echo json_encode([
+                "status"  => "expired",
+                "message" => "QR code expired and deactivated after 2hrs 10min"
+            ]);
+        } else {
+            echo json_encode([
+                "status"  => "error",
+                "message" => "Failed to deactivate QR code: " . $stmt2->error
+            ]);
+        }
+        $stmt2->close();
 
     } else {
+        $stmt->close();
         echo json_encode([
-            "status" => "success",
+            "status"     => "success",
             "created_at" => $createdAt,
-            "difference" => $interval->format("%a days, %h hours, %i minutes")
+            "difference" => $interval->format("%a days, %h hours, %i minutes"),
+            "minutes_used"    => $totalMinutes,
+            "minutes_remaining" => 130 - $totalMinutes
         ]);
     }
+
 } else {
+    $stmt->close();
     echo json_encode(["status" => "error", "message" => "No active QR code found"]);
 }
 
-$stmt->close();
 $conn->close();
 ?>
