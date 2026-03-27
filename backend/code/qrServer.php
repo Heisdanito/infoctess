@@ -89,26 +89,27 @@ if ($_SERVER['REQUEST_METHOD'] !== '') {
 
     $sessionQr = rand(0,10000) . "UEW" . $code . "QR" . rand(-9000 , 1223947) ."heis";
 
-    // Insert new QR session
-    $isActive = 1;
-    $serialStatus = 'qrcode'; // default value
+// Insert new QR session
+$isActive = 1;
+$serialStatus = 'qrcode'; // default value
 
-    $stmt = $conn->prepare("INSERT INTO qrcode 
-        (QRcode, session_code, longitude, latitude, course_id, group_id, is_active, created_by, serial_status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+$stmt = $conn->prepare("INSERT INTO qrcode 
+    (QRcode, session_code, longitude, latitude, course_id, group_id, is_active, created_by, serial_status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
-    $stmt->bind_param(
-        "ssssssisss",
-        $cc_QRCode,
-        $sessionQr,
-        $longitude,
-        $latitude,
-        $currentCourse,
-        $mygroup,
-        $isActive,
-        $student_id,
-        $serialStatus
-    );
+// ✅ Corrected bind_param: 9 type specifiers for 9 variables
+$stmt->bind_param(
+    "ssddssiss",
+    $cc_QRCode,     // string
+    $sessionQr,     // string
+    $longitude,     // double (float)
+    $latitude,      // double (float)
+    $currentCourse, // string
+    $mygroup,       // string (or "i" if numeric)
+    $isActive,      // integer
+    $student_id,    // string (or "i" if numeric ID)
+    $serialStatus   // string
+);
 
     $result_sql = $stmt->execute();
     $_SESSION['qr_session'] = $sessionQr;
