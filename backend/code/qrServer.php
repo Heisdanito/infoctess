@@ -8,7 +8,7 @@ $db_user = "avnadmin";
 $db_psw  = "AVNS_ZFYiFvpqdF-G5jN0vXu";
 $db_name = "defaultdb";
 $port    = 21225;
-$ca_path =  './ca.pem';
+$ca_path = './ca.pem';
 
 if (!file_exists($ca_path)) {
     echo json_encode(["status" => "failed", "message" => "ca.pem not found at: $ca_path"]);
@@ -94,15 +94,16 @@ if ($code < 1) {
 $sessionQr    = rand(0, 10000) . "UEW" . $code . "QR" . rand(-9000, 1223947) . "heis";
 $isActive     = 1;
 $serialStatus = 'qrcode';
-$expire_at    = date("Y-m-d H:i:s", strtotime("+2 hours")); // ← fix: set expiry 2hrs from now
+$expire_at    = date("Y-m-d H:i:s", strtotime("+2 hours"));
 
 // ── Step 4 — Insert new session ───────────────────────────────────────────
 $stmt = $conn->prepare("INSERT INTO qrcode 
     (QRcode, session_code, longitude, latitude, course_id, group_id, is_active, created_by, serial_status, expire_at, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
+// 10 params: s s d d s s i s s s
 $stmt->bind_param(
-    "ssddssiss s",
+    "ssddssisss",
     $cc_QRCode,
     $sessionQr,
     $longitude,
